@@ -31,6 +31,7 @@
 % this whole column?
 % - still needs to calculate the kappa correlation and Spearman
 % correlation.
+% - check script with empty annotation files
 
 %% set-up:
 clear all; close all;
@@ -39,13 +40,20 @@ folder_rater1='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data
 folder_rater2='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\Yuli';
 folder_combined='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\combined';
 
-subjects={'PD11'};
+subjects={'PD10', 'PD11'};
 
 sf=60; % choose sampling frequency
 ts=(1/sf); % time steps 
 
 tolerance_sec=2;    % Tolerance in sec
 tolerance=tolerance_sec*sf;
+
+calculate_agreement=true; % this only makes sense if running the script for multiple subjects
+
+%% prepare table to calculate agreement between raters
+varnames={'subject','nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration'};
+vartypes=[{'string'}, repmat({'double'}, [1,8])];
+agreement_t=table('Size', [length(subjects), 9], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
 %% loop over subjects
 for s=1:length(subjects)
@@ -64,7 +72,7 @@ for s=1:length(subjects)
     end
   end
   
-  %%
+  %% loop over files
   for f=1:length(files{1})
     %% collect the annotations of these files
     for i=1:2
@@ -170,12 +178,16 @@ for s=1:length(subjects)
         FOG_disagreed_t.rater(k)=1;
         FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{1}.FOG_Trigger(idx_rater1);
         FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{1}.FOG_Type(idx_rater1);
-        FOG_disagreed_t.NOTES_rater1(k)=FOG_annotations{1}.NOTES(idx_rater1);
+        try
+          FOG_disagreed_t.NOTES_rater1(k)=FOG_annotations{1}.NOTES(idx_rater1);
+        end
       elseif isempty(idx_rater1) & length(idx_rater2)==1
         FOG_disagreed_t.rater(k)=2;
         FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{2}.FOG_Trigger(idx_rater2);
-        FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{2}.FOG_Type(idx_rater2);   
-        FOG_disagreed_t.NOTES_rater2(k)=FOG_annotations{2}.NOTES(idx_rater2);
+        FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{2}.FOG_Type(idx_rater2); 
+        try
+          FOG_disagreed_t.NOTES_rater2(k)=FOG_annotations{2}.NOTES(idx_rater2);
+        end
       else
         error % the disagreed annotations should only be rated by one person and no the event should only overlap with one other event
       end
@@ -224,10 +236,13 @@ for s=1:length(subjects)
     end
 
     %% combine the agreed and disagreed tables into one table
-    FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
     % add timing in seconds (instead of samples)
-    FOG_all_t.BeginTime_Ss_msec=(FOG_all_t.BeginTime_sample(:)-1)/sf;
-    FOG_all_t.EndTime_Ss_msec=(FOG_all_t.EndTime_sample(:)-1)/sf;
+    FOG_agreed_t.BeginTime_Ss_msec=(FOG_agreed_t.BeginTime_sample(:)-1)/sf;
+    FOG_agreed_t.EndTime_Ss_msec=(FOG_agreed_t.EndTime_sample(:)-1)/sf;
+    FOG_disagreed_t.BeginTime_Ss_msec=(FOG_disagreed_t.BeginTime_sample(:)-1)/sf;
+    FOG_disagreed_t.EndTime_Ss_msec=(FOG_disagreed_t.EndTime_sample(:)-1)/sf;
+    FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
+
     % add extra notes
     for k=1:height(NOTES{1})
       FOG_all_t.BeginTime_Ss_msec(end+1)=NOTES{1}.BeginTime_Ss_msec(k);
@@ -241,14 +256,80 @@ for s=1:length(subjects)
     end
     %% export
     writetable(FOG_all_t, fullfile(folder_combined, sprintf('sub-%s_file-%02d.tsv', subjects{s}, f)),  'FileType', 'text', 'Delimiter', '\t')
-    
+        
+  end % loop over files
+  
+  %% fill in agreement table
+  agreement_t.subject(s)=subjects{s};
+  agreement_t.nrFOG_rater1(s)=agreement_t.nrFOG_rater1(s)+height(FOG_annotations{1});
+  agreement_t.durFOG_rater1(s)=agreement_t.durFOG_rater1(s)+sum([FOG_annotations{1}.EndTime_Ss_msec-FOG_annotations{1}.BeginTime_Ss_msec]);
+  agreement_t.nrFOG_rater2(s)=agreement_t.nrFOG_rater2(s)+height(FOG_annotations{2});
+  agreement_t.durFOG_rater2(s)=agreement_t.durFOG_rater2(s)+sum([FOG_annotations{2}.EndTime_Ss_msec-FOG_annotations{2}.BeginTime_Ss_msec]);
+  agreement_t.durFOG_agreed(s)=agreement_t.durFOG_agreed(s)+sum([FOG_agreed_t.EndTime_Ss_msec-FOG_agreed_t.BeginTime_Ss_msec]);
+  idx_rater1=find(FOG_disagreed_t.rater==1); % FOG events that were only annotated by rater1
+  agreement_t.durFOG_disagreed_rater1(s)=agreement_t.durFOG_disagreed_rater1(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater1)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater1)]);
+  idx_rater2=find(FOG_disagreed_t.rater==2); % FOG events that were only annotated by rater2
+  agreement_t.durFOG_disagreed_rater2(s)=agreement_t.durFOG_disagreed_rater2(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater2)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater2)]);
+  agreement_t.total_duration(s)=agreement_t.total_duration(s)+endtime;
+end % loop over subjects
+
+%% calculate agreement
+if calculate_agreement
+  % kappa correlation coefficient
+  kappa=kappacoefficient(agreement_t)
+  
+  % Spearman correlation
+  if height(agreement_t)<=2
+    warning('At least three participants should be included to be able to calculate the correlation')
+  else
+    [corr_nrFOG, corr_durFOG]=spearmancorrelation(agreement_t)
   end
 end
 
-
 %% HELPER FUNCTIONS
+% VEC2EVENT
 function     [beginsample, endsample]=vec2event(boolvec)
     tmp = diff([0 boolvec 0]);
     beginsample = find(tmp==+1);
     endsample = find(tmp==-1) - 1;
+end
+
+% KAPPACOEFFICIENT
+function kappa=kappacoefficient(agreement_t)
+total_duration=sum(agreement_t.total_duration);
+
+a=sum(agreement_t.durFOG_agreed);
+b=sum(agreement_t.durFOG_disagreed_rater1);
+c=sum(agreement_t.durFOG_disagreed_rater2);
+d=total_duration-a-b-c;
+
+Po=(a+d)/total_duration;
+Pyes=((a+c)/total_duration)*((a+b)/total_duration);
+Pno=((b+d)/total_duration)*((c+d)/total_duration);
+
+kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
+end
+
+% SPEARMANCORRELATION
+function [corr_nrFOG, corr_durFOG]=spearmancorrelation(agreement_t)
+% Number of FOG
+corr_nrFOG = corr(agreement_t.nrFOG_rater1, agreement_t.nrFOG_rater2, 'Type', 'Spearman');
+% plot
+figure;
+scatter(agreement_t.nrFOG_rater1, agreement_t.nrFOG_rater2, 'filled');
+title(sprintf('Spearman correlation for number of FOG: %.02f', corr_nrFOG)); 
+xlabel('rater1'), ylabel('rater2');
+grid on; axis square; 
+% FIXME: scaling
+
+% Duration of FOG
+corr_durFOG = corr(agreement_t.durFOG_rater1, agreement_t.durFOG_rater2, 'Type', 'Spearman');
+% plot
+figure; 
+scatter(agreement_t.durFOG_rater1, agreement_t.durFOG_rater2, 'filled');
+title(sprintf('Spearman correlation for FOG duration (sec): %.02f', corr_durFOG));
+xlabel('rater1'), ylabel('rater2');
+grid on; axis square; 
+% FIXME: scaling
+
 end
