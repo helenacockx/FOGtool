@@ -29,8 +29,6 @@
 % to ELAN? but also depends on offset master media file (so uncheck)
 % - is the extra tier 'check_type' and 'check_trigger' handy, or remove
 % this whole column?
-% - still needs to calculate the kappa correlation and Spearman
-% correlation.
 % - check script with empty annotation files
 
 %% set-up:
@@ -42,11 +40,13 @@ folder_combined='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\da
 
 subjects={'PD10', 'PD11'};
 
-sf=60; % choose sampling frequency
+sf=1000; % choose sampling frequency
 ts=(1/sf); % time steps 
 
-tolerance_sec=2;    % Tolerance in sec
+tolerance_sec=inf;    % Tolerance in sec (if inf --> always include/exclude when overlappping annotations)
 tolerance=tolerance_sec*sf;
+
+correction='include'; % or exclude
 
 calculate_agreement=true; % this only makes sense if running the script for multiple subjects
 
@@ -77,7 +77,7 @@ for s=1:length(subjects)
     %% collect the annotations of these files
     for i=1:2
       annotations=readtable(fullfile(files{i}(f).folder, files{i}(f).name), 'ReadVariableNames', 1, 'HeaderLines', 0);
-      % only select FOG annotations 
+      % only select FOG annotations & notes
       FOG_annotations{i}=annotations(~ismissing(annotations.FOG_Trigger(:))|~ismissing(annotations.FOG_Trigger(:)),:);
       NOTES{i}=annotations(~ismissing(annotations.NOTES(:)) & (ismissing(annotations.FOG_Trigger(:))&ismissing(annotations.FOG_Type(:))),:); % extra notes that were not annotated during a FOG
       % check if each FOG has been labeled with a FOG_Trigger and a FOG_Type
@@ -88,7 +88,7 @@ for s=1:length(subjects)
     
     %% convert annotations to boolean vectors based on the given sampling frequency
     endtime=max([FOG_annotations{1}.EndTime_Ss_msec; FOG_annotations{2}.EndTime_Ss_msec]); % FIXME: or use length of video file instead?
-    t=[1:1/sf:endtime+5*sf]; % time vector (add 5 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
+    t=[1:1/sf:endtime+5]; % time vector (add 5 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
     boolvec=zeros(1,length(t)); % boolean vector
     for i=1:2
       % add extra column with begin sample and end sample of FOG annotation
@@ -124,10 +124,18 @@ for s=1:length(subjects)
     % Als voor een plateau een 2 zit en daarna een 0, plateau<=.5*tolerantie,
     % dan consensus = 2. 
     FOG_corrected=FOG_summed;
+    switch correction
+      case 'include'
+        x=2;
+      case 'exclude'
+        x=0;
+      otherwise
+        error('no valid correction option was chosen. Please chose include or exclude.')
+    end        
     for k=1:length(beginsample)
       if FOG_summed(beginsample(k)-1)== 2 & FOG_summed(endsample(k)+1)==2 
         if beginsample(k)-endsample(k)<= tolerance
-          FOG_corrected(beginsample(k):endsample(k))=2;
+          FOG_corrected(beginsample(k):endsample(k))=x;
         else
           FOG_corrected(beginsample(k):endsample(k))=1;% or 0
         end
@@ -139,13 +147,13 @@ for s=1:length(subjects)
         end
       elseif FOG_corrected(beginsample(k)-1)== 0 & FOG_summed(endsample(k)+1)==2
         if endsample(k)-beginsample(k)<= tolerance %0.5*
-          FOG_corrected(beginsample(k):endsample(k))=2;
+          FOG_corrected(beginsample(k):endsample(k))=x;
         else
           FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annotation
         end          
       elseif FOG_corrected(beginsample(k)-1)== 2 & FOG_summed(endsample(k)+1)==0
         if endsample(k)-beginsample(k)<= tolerance %0.5*
-          FOG_corrected(beginsample(k):endsample(k))=2;
+          FOG_corrected(beginsample(k):endsample(k))=x;
         else
           FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annotation
         end
