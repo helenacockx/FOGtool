@@ -84,6 +84,13 @@ for s=1:length(subjects)
       if any(ismissing(FOG_annotations{i}.FOG_Trigger(:))|ismissing(FOG_annotations{i}.FOG_Type))
         warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type')
       end
+      % calculate total duration based on the gait tasks
+      gait_tasks=annotations(~ismissing(annotations.gait_task(:)),:);
+      total_duration{i}=sum(gait_tasks.EndTime_Ss_msec-gait_tasks.BeginTime_Ss_msec)
+    end
+    % check if total_duration is the same for both files
+    if total_duration{1}~=total_duration{2}
+      warning('total duration of gait tasks was not the same for both raters. Using the total duration of the first rater.')
     end
     
     %% convert annotations to boolean vectors based on the given sampling frequency
@@ -278,7 +285,7 @@ for s=1:length(subjects)
   agreement_t.durFOG_disagreed_rater1(s)=agreement_t.durFOG_disagreed_rater1(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater1)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater1)]);
   idx_rater2=find(FOG_disagreed_t.rater==2); % FOG events that were only annotated by rater2
   agreement_t.durFOG_disagreed_rater2(s)=agreement_t.durFOG_disagreed_rater2(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater2)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater2)]);
-  agreement_t.total_duration(s)=agreement_t.total_duration(s)+endtime;
+  agreement_t.total_duration(s)=agreement_t.total_duration(s)+total_duration{1};
 end % loop over subjects
 
 %% calculate agreement
