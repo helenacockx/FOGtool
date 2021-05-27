@@ -110,7 +110,7 @@ for s=1:length(subjects)
     end
     
     %% combine annotations
-    FOG_summed=FOG_vector{1}+FOG_vector{2}; % 0=agreed no FOG; 2=agreed FOG; 1=disagreed
+    FOG_summed=FOG_vector{1}+FOG_vector{2}; % 0=agreed no FOG; 2=agreed FOG; 1=disagreed FOG
     
     % find begin and end samples of disagreed events
     beginsample=find(FOG_summed==1 & diff([0 FOG_summed])~=0);% find beginsamples when going from agreed to disagreed 
@@ -275,16 +275,16 @@ for s=1:length(subjects)
   end % loop over files
   
   %% fill in agreement table
+  FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=FOG only annotated by rater 1; 2=FOG only annotated by rater 2    
+    
   agreement_t.subject(s)=subjects{s};
   agreement_t.nrFOG_rater1(s)=agreement_t.nrFOG_rater1(s)+height(FOG_annotations{1});
   agreement_t.durFOG_rater1(s)=agreement_t.durFOG_rater1(s)+sum([FOG_annotations{1}.EndTime_Ss_msec-FOG_annotations{1}.BeginTime_Ss_msec]);
   agreement_t.nrFOG_rater2(s)=agreement_t.nrFOG_rater2(s)+height(FOG_annotations{2});
   agreement_t.durFOG_rater2(s)=agreement_t.durFOG_rater2(s)+sum([FOG_annotations{2}.EndTime_Ss_msec-FOG_annotations{2}.BeginTime_Ss_msec]);
   agreement_t.durFOG_agreed(s)=agreement_t.durFOG_agreed(s)+sum([FOG_agreed_t.EndTime_Ss_msec-FOG_agreed_t.BeginTime_Ss_msec]);
-  idx_rater1=find(FOG_disagreed_t.rater==1); % FOG events that were only annotated by rater1
-  agreement_t.durFOG_disagreed_rater1(s)=agreement_t.durFOG_disagreed_rater1(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater1)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater1)]);
-  idx_rater2=find(FOG_disagreed_t.rater==2); % FOG events that were only annotated by rater2
-  agreement_t.durFOG_disagreed_rater2(s)=agreement_t.durFOG_disagreed_rater2(s)+sum([FOG_disagreed_t.EndTime_Ss_msec(idx_rater2)-FOG_disagreed_t.BeginTime_Ss_msec(idx_rater2)]);
+  agreement_t.durFOG_disagreed_rater1(s)=agreement_t.durFOG_disagreed_rater1(s)+sum(FOG_summed_v2==1)/sf;
+  agreement_t.durFOG_disagreed_rater2(s)=agreement_t.durFOG_disagreed_rater2(s)+sum(FOG_summed_v2==2)/sf;
   agreement_t.total_duration(s)=agreement_t.total_duration(s)+total_duration{1};
 end % loop over subjects
 
