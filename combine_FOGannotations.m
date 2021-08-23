@@ -247,9 +247,9 @@ writetable(FOG_all_t, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
 FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=FOG only annotated by rater 1; 2=FOG only annotated by rater 2
 
 % make an agreement table for this file
-varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration'};
-vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,8])];
-agreement_info=table('Size', [1, 10], 'VariableNames', varnames, 'VariableTypes', vartypes);
+varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration', 'kappa'};
+vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,9])];
+agreement_info=table('Size', [1, 11], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
 agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
@@ -264,7 +264,12 @@ agreement_info.durFOG_disagreed_rater2=sum(FOG_summed_v2==2)/sf;
 agreement_info.total_duration=duration_gait_tasks{1};
 
 % calculate kappa correlation coefficient of this file
-kappa=kappacoefficient(agreement_info)
+kappa=kappacoefficient(agreement_info);
+agreement_info.kappa=kappa;
+
+% display
+fprintf('Agreement info of this file: \n')
+display(table(varnames(3:end)', agreement_info{:,3:end}', 'VariableNames', {'annotation_info', 'value'}))
 
 % load the big agreement table if present
 if exist(filename_agreement_table, 'file')
