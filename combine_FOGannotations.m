@@ -36,6 +36,7 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 sf=1000; % choose sampling frequency
 ts=(1/sf); % time steps 
 tolerance=tolerance_sec*sf;  
+ warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
 %% collect the annotations of these files
 annotations{1}=readtable(filename_rater1, 'ReadVariableNames', 1, 'HeaderLines', 0);
@@ -45,8 +46,10 @@ for i=1:2
   FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.FOG_Trigger(:))|~ismissing(annotations{i}.FOG_Trigger(:)),:);
   NOTES{i}=annotations{i}(~ismissing(annotations{i}.NOTES(:)) & (ismissing(annotations{i}.FOG_Trigger(:))&ismissing(annotations{i}.FOG_Type(:))),:); % extra notes that were not annotated during a FOG
   % check if each FOG has been labeled with a FOG_Trigger and a FOG_Type
-  if any(ismissing(FOG_annotations{i}.FOG_Trigger(:))|ismissing(FOG_annotations{i}.FOG_Type))
-    warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type')
+  idx=find(ismissing(FOG_annotations{i}.FOG_Trigger(:))|ismissing(FOG_annotations{i}.FOG_Type));
+  if ~isempty(idx)
+    warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type for rater %.0d', i)
+    display(FOG_annotations{i}(idx,:))
   end
   % calculate total duration based on the gait tasks
   gait_tasks=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
@@ -55,6 +58,8 @@ end
 % check if total_duration is the same for both files
 if round(duration_gait_tasks{1})~=round(duration_gait_tasks{2})
   warning('total duration of gait tasks was not the same for both raters. Using the total duration of the first rater.')
+  fprintf('total duration of rater 1: %d \n', round(duration_gait_tasks{1}));
+  fprintf('total duration of rater 2: %d \n', round(duration_gait_tasks{2}));  
 end
 
 %% convert annotations to boolean vectors based on the given sampling frequency
@@ -136,13 +141,15 @@ FOG_agreed=(FOG_corrected==2);
 FOG_disagreed=(FOG_corrected==1);
     
 %% visualize
+[path, name, ext]=fileparts(filename_combined);
 figure;
-ax(1)=subplot(4,1,1); plot(t, FOG_vector{1}, 'Color', '#EDB120'); ylim([-1 2]); ylabel('FOG rater 1');
+ax(1)=subplot(4,1,1); plot(t, FOG_vector{1}, 'Color', '#EDB120'); ylim([-1 2]); ylabel('FOG rater 1');title(name);
 ax(2)=subplot(4,1,2); plot(t, FOG_vector{2},  'Color','#0072BD'); ylim([-1 2]);ylabel('FOG rater 2'); 
 ax(3)=subplot(4,1,3); plot(t, FOG_agreed,  'Color','#77AC30'); ylim([-1 2]);ylabel('FOG agreed')
 ax(4)=subplot(4,1,4); plot(t, FOG_disagreed, 'Color', '#A2142F'); ylim([-1 2]);ylabel('FOG disagreed')
 linkaxes(ax)
 xlabel('time (in sec)');
+
     
 %% convert FOG disagreed to a table and add the rater, trigger and type for this FOG
 [beginsample, endsample]=vec2event(FOG_disagreed);% find beginsample and endsample of each event
