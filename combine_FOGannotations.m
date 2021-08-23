@@ -231,14 +231,10 @@ FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
 
 % add extra notes
 for k=1:height(NOTES{1})
-  FOG_all_t.BeginTime_Ss_msec(end+1)=NOTES{1}.BeginTime_Ss_msec(k);
-  FOG_all_t.EndTime_Ss_msec(end)=NOTES{1}.EndTime_Ss_msec(k);
-  FOG_all_t.NOTES_rater1(end)=NOTES{1}.NOTES(k);
+  FOG_all_t(end+1,:)=[repmat({NaN}, 1,3), repmat({[]}, 1,6) NOTES{1}.NOTES(k) {[]} NOTES{1}.BeginTime_Ss_msec(k) NOTES{1}.EndTime_Ss_msec(k)];
 end
 for k=1:height(NOTES{2})
-  FOG_all_t.BeginTime_Ss_msec(end+1)=NOTES{2}.BeginTime_Ss_msec(k);
-  FOG_all_t.EndTime_Ss_msec(end)=NOTES{2}.EndTime_Ss_msec(k);
-  FOG_all_t.NOTES_rater2(end)=NOTES{2}.NOTES(k);
+  FOG_all_t(end+1,:)=[repmat({NaN}, 1,3), repmat({[]}, 1,7) NOTES{2}.NOTES(k) NOTES{2}.BeginTime_Ss_msec(k) NOTES{2}.EndTime_Ss_msec(k)];
 end
 
 % export the table
