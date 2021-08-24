@@ -17,12 +17,10 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 % choice. By combining the agreed and disagreed FOG's (which have a
 % consensus now), you have all the FOG's. 
 
-% TO DISCUSS:
+% TO DO:
 % - what if 'export multiple files as'
 % - what if FOG_Trigger and FOG_Type are not dependent tiers?/are not both
 % in the same line
-% - decide about corrections... Have a setting for this? (e.g. strict vs
-% broad)
 % - option to visualize/always visualize? use time vector that corresponds
 % to ELAN? but also depends on offset master media file (so uncheck)
 % - check script with empty annotation files
@@ -58,23 +56,33 @@ if round(duration_gait_tasks{1})~=round(duration_gait_tasks{2})
 end
 
 %% convert annotations to boolean vectors based on the given sampling frequency
-endtime=max([FOG_annotations{1}.EndTime_Ss_msec; FOG_annotations{2}.EndTime_Ss_msec]); % FIXME: or use length of video file instead?/gait_tasks
-t=[1:1/sf:endtime+5]; % time vector (add 5 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
-boolvec=zeros(1,length(t)); % boolean vector
+endtime = max(gait_tasks.EndTime_Ss_msec);
+t=[0:1/sf:endtime+1]; % time vector (add 1 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
+boolvec_task=nan(1,length(t)); % boolean vector including all time points
+% add extra column with begin sample and end sample of gait tasks
+gait_tasks.BeginTime_sample = round(gait_tasks.BeginTime_Ss_msec*sf + 1);
+gait_tasks.EndTime_sample = round(gait_tasks.EndTime_Ss_msec*sf + 1);
+% make boolvec 0 during gait_tasks
+for i=1:height(gait_tasks)
+  boolvec_task(gait_tasks.BeginTime_sample(i):gait_tasks.EndTime_sample(i)) = 0; 
+end
 for i=1:2
   % add extra column with begin sample and end sample of FOG annotation
   FOG_annotations{i}.BeginTime_sample=round(FOG_annotations{i}.BeginTime_Ss_msec*sf+1);
   FOG_annotations{i}.EndTime_sample=round(FOG_annotations{i}.EndTime_Ss_msec*sf+1);
   % create a boolean vector with the FOG annotations of this rater
-  boolvec_FOG=boolvec;
+  boolvec_FOG=boolvec_task;
   for k=1:height(FOG_annotations{i})
     boolvec_FOG(FOG_annotations{i}.BeginTime_sample(k):FOG_annotations{i}.EndTime_sample(k))=1;
   end
-  FOG_vector{i}=boolvec_FOG;
+  FOG_vector{i}=boolvec_FOG + boolvec_task; % + boolvec_task to make sure that FOGs falling outside the gait_task are made nan
+  % make sure all FOG events go back to 0 before gait_task ends
+  probl_edge = find(FOG_vector{i}==1 & (isnan([diff(FOG_vector{i}) nan])|isnan([nan diff(FOG_vector{i})]))); % find problematic edges (= [1 nan] or [nan 1])
+  FOG_vector{i}(probl_edge) = 0;
 end
 
 %% combine annotations
-FOG_summed=FOG_vector{1}+FOG_vector{2}; % 0=agreed no FOG; 2=agreed FOG; 1=disagreed FOG
+FOG_summed=FOG_vector{1}+FOG_vector{2}; % 0=agreed no FOG; 2=agreed FOG; 1=disagreed FOG; nan=no gait_task
 
 % find begin and end samples of disagreed events
 beginsample=find(FOG_summed==1 & diff([0 FOG_summed])~=0);% find beginsamples when going from agreed to disagreed
@@ -129,8 +137,8 @@ for k=1:length(beginsample)
 end
 
 % find the agreed and disagreed FOG's
-FOG_agreed=(FOG_corrected==2);
-FOG_disagreed=(FOG_corrected==1);
+FOG_agreed = (FOG_corrected==2) + boolvec_task;
+FOG_disagreed = (FOG_corrected==1) + boolvec_task;
     
 %% visualize
 [path, name, ext]=fileparts(filename_combined);
