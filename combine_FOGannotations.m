@@ -148,10 +148,9 @@ xlabel('time (in sec)');
 n=length(beginsample);
 FOG_disagreed_t=table(beginsample', endsample',nan(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), 'VariableNames', {'BeginTime_sample', 'EndTime_sample','rater', 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type', 'check_trigger', 'check_type','NOTES_rater1', 'NOTES_rater2'});% convert into table
 for k=1:height(FOG_disagreed_t)
-  % find overlapping events of the two raters (FIXME: make helper
-  % function?)
-  idx_rater1=find(([FOG_annotations{1}.BeginTime_sample]<=beginsample(k)&[FOG_annotations{1}.EndTime_sample]>beginsample(k))|([FOG_annotations{1}.BeginTime_sample]<endsample(k)&[FOG_annotations{1}.EndTime_sample]>=endsample(k)));
-  idx_rater2=find(([FOG_annotations{2}.BeginTime_sample]<=beginsample(k)&[FOG_annotations{2}.EndTime_sample]>beginsample(k))|([FOG_annotations{2}.BeginTime_sample]<endsample(k)&[FOG_annotations{2}.EndTime_sample]>=endsample(k)));
+  % find annotations that fall within this event
+  idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
+  idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
   if length(idx_rater1)==1 & isempty(idx_rater2)
     FOG_disagreed_t.rater(k)=1;
     FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{1}.FOG_Trigger(idx_rater1);
@@ -176,9 +175,12 @@ end
 n=length(beginsample);
 FOG_agreed_t=table(beginsample', endsample', nan(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), 'VariableNames', {'BeginTime_sample', 'EndTime_sample', 'rater', 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type',  'check_trigger', 'check_type', 'NOTES_rater1', 'NOTES_rater2'});% convert into table
 for k=1:height(FOG_agreed_t)
-  % find overlapping events of the other raters
-  idx_rater1=find(([FOG_annotations{1}.BeginTime_sample]<=beginsample(k)&[FOG_annotations{1}.EndTime_sample]>beginsample(k))|([FOG_annotations{1}.BeginTime_sample]<endsample(k)&[FOG_annotations{1}.EndTime_sample]>=endsample(k)));
-  idx_rater2=find(([FOG_annotations{2}.BeginTime_sample]<=beginsample(k)&[FOG_annotations{2}.EndTime_sample]>beginsample(k))|([FOG_annotations{2}.BeginTime_sample]<endsample(k)&[FOG_annotations{2}.EndTime_sample]>=endsample(k)));
+  % find annotations of the two raters that fall within this event
+  idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
+  idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
+  if isempty(idx_rater1) | isempty(idx_rater2)
+    error
+  end
   triggers=[FOG_annotations{1}.FOG_Trigger(idx_rater1); FOG_annotations{2}.FOG_Trigger(idx_rater2)];
   triggers=unique(triggers); % unique values for triggers
   if length(triggers)==1 % the same value was given for FOG_Trigger
@@ -286,7 +288,14 @@ function     [beginsample, endsample]=vec2event(boolvec)
     tmp = diff([0 boolvec 0]);
     beginsample = find(tmp==+1);
     endsample = find(tmp==-1) - 1;
-
+    
+% OVERLAPPINGEVT
+function [idx] = overlappingevt(annotations, beginsample, endsample)
+% find the indices of annotation events that fall within the event with the
+% given [beginsample endsample].
+  idx=find(([annotations.BeginTime_sample]<=beginsample & [annotations.EndTime_sample]>beginsample) |... % annotation includes the beginsample
+    ([annotations.BeginTime_sample]<endsample & [annotations.EndTime_sample]>=endsample) | ... % annotation includes the endsample
+    ([annotations.BeginTime_sample]>=beginsample & [annotations.EndTime_sample]<endsample)); % annotation falls within the event
 
 % KAPPACOEFFICIENT
 function kappa=kappacoefficient(agreement_t)
