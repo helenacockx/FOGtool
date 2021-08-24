@@ -19,17 +19,12 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 
 % TO DISCUSS:
 % - what if 'export multiple files as'
-% - file naming 
 % - what if FOG_Trigger and FOG_Type are not dependent tiers?/are not both
 % in the same line
-% - what do we use as the length of the video file (because this has
-% implications for the calculation of kappa and Spearman's correlation)
 % - decide about corrections... Have a setting for this? (e.g. strict vs
 % broad)
 % - option to visualize/always visualize? use time vector that corresponds
 % to ELAN? but also depends on offset master media file (so uncheck)
-% - is the extra tier 'check_type' and 'check_trigger' handy, or remove
-% this whole column?
 % - check script with empty annotation files
 
 %% set-up:
@@ -88,17 +83,8 @@ if length(beginsample)~= length(endsample)
   error
 end
 
-% correct disagreements based on tolerance window length (e.g. 2 sec or inf)
-% A; Als bij een plateau van 1 zowel voor als na een 2 zit
-% plateau<=tolerantie, dan concensus = 2.
-% B; als bij een plateau van 1 zowel voor als na een 0 zit, en
-% plateau<=tolerantie, dan consensus = 0. ==> or 1?
-% C; annoteerder A annoteert het begin eerder dan annoteerder B
-% Als voor een plateau een 0 zit en daarna een 2, plateau<=.5*tolerantie,
-% dan consensus = 2.
-% C; annoteerder A annoteert het einde eerder dan annoteerder B
-% Als voor een plateau een 2 zit en daarna een 0, plateau<=.5*tolerantie,
-% dan consensus = 2.
+% include or exclude disagreed events based on the chosen parameters
+% (correction & tolerance)
 FOG_corrected=FOG_summed;
 switch correction
   case 'include'
@@ -109,24 +95,30 @@ switch correction
     error('no valid correction option was chosen. Please choose include or exclude.')
 end
 for k=1:length(beginsample)
+  % disagreement on annotation falls within another annotation:
   if FOG_summed(beginsample(k)-1)== 2 & FOG_summed(endsample(k)+1)==2
     if beginsample(k)-endsample(k)<= tolerance
-      FOG_corrected(beginsample(k):endsample(k))=x;
+      FOG_corrected(beginsample(k):endsample(k))=x; % or always include?
     else
-      FOG_corrected(beginsample(k):endsample(k))=1;% or 0
+      FOG_corrected(beginsample(k):endsample(k))=1;
     end
+  % only one annotater annotated this FOG episode:
   elseif FOG_summed(beginsample(k)-1)== 0 & FOG_summed(endsample(k)+1)==0
     if endsample(k)-beginsample(k)<= tolerance
-      FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annoation (or 0)
+      FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annotation 
     else
       FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annotation
     end
+  % one annotator annotated the FOG episode earlier than the other
+  % annotator:
   elseif FOG_corrected(beginsample(k)-1)== 0 & FOG_summed(endsample(k)+1)==2
     if endsample(k)-beginsample(k)<= tolerance %0.5*
       FOG_corrected(beginsample(k):endsample(k))=x;
     else
       FOG_corrected(beginsample(k):endsample(k))=1; % not agreed annotation
     end
+  % one annotator annotated the FOG epidosde longer than the other
+  % annotator
   elseif FOG_corrected(beginsample(k)-1)== 2 & FOG_summed(endsample(k)+1)==0
     if endsample(k)-beginsample(k)<= tolerance %0.5*
       FOG_corrected(beginsample(k):endsample(k))=x;
@@ -249,7 +241,6 @@ FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=
 % make an agreement table for this file
 varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration', 'kappa'};
 vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,9])];
-agreement_info=table('Size', [1, 11], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
 agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
