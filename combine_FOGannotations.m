@@ -275,8 +275,9 @@ writetable(FOG_all_t, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
 FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=FOG only annotated by rater 1; 2=FOG only annotated by rater 2
 
 % make an agreement table for this file
-varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration', 'kappa'};
-vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,9])];
+varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration', 'kappa', 'pabak'};
+vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,10])];
+agreement_info=table('Size', [1, 12], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
 agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
@@ -288,14 +289,15 @@ agreement_info.durFOG_rater2=sum([FOG_annotations{2}.EndTime_Ss_msec-FOG_annotat
 agreement_info.durFOG_agreed=sum(FOG_summed_v2==3)/sf;
 agreement_info.durFOG_disagreed_rater1=sum(FOG_summed_v2==1)/sf;
 agreement_info.durFOG_disagreed_rater2=sum(FOG_summed_v2==2)/sf;
-agreement_info.total_duration=duration_gait_tasks{1};
+agreement_info.total_duration=total_duration;
 
 % calculate kappa correlation coefficient of this file
-kappa=kappacoefficient(agreement_info);
+[kappa, pabak]=kappacoefficient(agreement_info);
 agreement_info.kappa=kappa;
+agreement_info.pabak = pabak;
 
 % display
-fprintf('Agreement info of this file: \n')
+fprintf('Agreement info of file %s: \n', name)
 display(table(varnames(3:end)', agreement_info{:,3:end}', 'VariableNames', {'annotation_info', 'value'}))
 
 % load the big agreement table if present
@@ -332,7 +334,7 @@ function [idx] = overlappingevt(annotations, beginsample, endsample)
     ([annotations.BeginTime_sample]>=beginsample & [annotations.EndTime_sample]<endsample)); % annotation falls within the event
 
 % KAPPACOEFFICIENT
-function kappa=kappacoefficient(agreement_t)
+function [kappa, pabak] =kappacoefficient(agreement_t)
 total_duration=sum(agreement_t.total_duration);
 
 a=sum(agreement_t.durFOG_agreed);
@@ -345,7 +347,7 @@ Pyes=((a+c)/total_duration)*((a+b)/total_duration);
 Pno=((b+d)/total_duration)*((c+d)/total_duration);
 
 kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
-
+pabak= 2*Po - 1; % prevalence-ajusted bias-adjusted kappa
 
 % SPEARMANCORRELATION
 function [corr_nrFOG, corr_durFOG]=spearmancorrelation(agreement_t)
