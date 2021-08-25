@@ -45,18 +45,44 @@ for i=1:2
     display(FOG_annotations{i}(idx,:))
   end
   % calculate total duration based on the gait tasks
-  gait_tasks=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
-  duration_gait_tasks{i}=sum(gait_tasks.EndTime_Ss_msec-gait_tasks.BeginTime_Ss_msec);
+  gait_tasks{i}=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
+  if isempty(gait_tasks{i})
+    warning('No gait_tasks were found for rater %.0d. Assuming that the gait_task ended after the last FOG event.', i)
+    duration_gait_tasks{i}=max(FOG_annotations{i}.EndTime_Ss_msec);
+  else
+    duration_gait_tasks{i}=sum(gait_tasks{i}.EndTime_Ss_msec-gait_tasks{i}.BeginTime_Ss_msec);
+  end
 end
-% check if total_duration is the same for both files
-if round(duration_gait_tasks{1})~=round(duration_gait_tasks{2})
-  warning('total duration of gait tasks was not the same for both raters. Using the total duration of the first rater.')
-  fprintf('total duration of rater 1: %d \n', round(duration_gait_tasks{1}));
-  fprintf('total duration of rater 2: %d \n', round(duration_gait_tasks{2}));  
+
+% calculate total_duration and endtime for the annotations
+if ~isempty(gait_tasks{1}) & ~isempty(gait_tasks{2})
+  % check if total_duration is the same for both files
+  if round(duration_gait_tasks{1})~=round(duration_gait_tasks{2})
+    warning('total duration of gait tasks was not the same for both raters. Using the gait_tasks of rater 1.')
+    fprintf('total duration of rater 1: %d \n', round(duration_gait_tasks{1}));
+    fprintf('total duration of rater 2: %d \n', round(duration_gait_tasks{2}));
+  end
+  total_duration = duration_gait_tasks{1};
+  endtime = max(gait_tasks{1}.EndTime_Ss_msec);
+  gait_tasks=gait_tasks{1};
+elseif ~isempty(gait_tasks{1}) | ~isempty(gait_tasks{2})
+  rater = find([~isempty(gait_tasks{1})  ~isempty(gait_tasks{2})]);
+  warning('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration', rater)
+  total_duration = duration_gait_tasks{rater};
+  endtime = max(gait_tasks{rater}.EndTime_Ss_msec);
+  gait_tasks=gait_tasks{rater};
+elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
+  warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended after the last FOG event. Be carefull with the interpretation of the agreement coefficients.')
+  total_duration = max([duration_gait_tasks{1}, duration_gait_tasks{2}]);
+  endtime = total_duration;
+  if isempty(endtime)
+    endtime = 0;
+    total_duration = 0;
+  end
+  gait_tasks=table(0, endtime, 'VariableNames', {'BeginTime_Ss_msec', 'EndTime_Ss_msec'});
 end
 
 %% convert annotations to boolean vectors based on the given sampling frequency
-endtime = max(gait_tasks.EndTime_Ss_msec);
 t=[0:1/sf:endtime+1]; % time vector (add 1 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
 boolvec_task=nan(1,length(t)); % boolean vector including all time points
 % add extra column with begin sample and end sample of gait tasks
