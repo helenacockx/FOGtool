@@ -9,6 +9,14 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 % 3. import the new .tsv file in ELAN. This will generate a tier
 % 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger',
 % 'FOG_disagreed_Type', 'check_trigger', and 'check_type.
+% - create new ELAN file; make sure to add the same video offsets
+% - import CSV/tab-delimited text file: tick 'FOG_agreed_Trigger' (Annotation),
+% 'FOG_agreed_Type' (Annotation), 'FOG_disagreed_Trigger' (Annotation),
+% 'FOG_disagreed_Type' (Annotation), 'check_trigger' (Annotation),
+% 'check_type' (Annotation), 'NOTES_rater1' (Annotation), 'NOTES_rater2'
+% (Annotation), 'BeginTime_Ss_msec' (Begin Time), 'EndTime_Ss_msec' 
+% (End time); specify first row of data =2; specify delimiter = tab; Skip
+% empty cells, don't create empty annotations = true.
 % 4. the third rater decides on all the annotations in FOG_disagreed_... to
 % keep it or delete it. When an annotation is flagged with 'check_type' or
 % 'check_trigger', the raters did not agree on the value of the annoation,
@@ -275,9 +283,9 @@ writetable(FOG_all_t, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
 FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=FOG only annotated by rater 1; 2=FOG only annotated by rater 2
 
 % make an agreement table for this file
-varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'durFOG_agreed', 'durFOG_disagreed_rater1', 'durFOG_disagreed_rater2', 'total_duration', 'kappa', 'pabak'};
-vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,10])];
-agreement_info=table('Size', [1, 12], 'VariableNames', varnames, 'VariableTypes', vartypes);
+varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'nrFOG_agreed', 'durFOG_agreed', 'nrFOG_disagreed_rater1', 'durFOG_disagreed_rater1', 'nrFOG_disagreed_rater2', 'durFOG_disagreed_rater2', 'total_duration', 'kappa', 'pabak', 'agreement_trigger', 'agreement_type'};
+vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,15])];
+agreement_info=table('Size', [1, 17], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
 agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
@@ -286,8 +294,11 @@ agreement_info.nrFOG_rater1=height(FOG_annotations{1});
 agreement_info.durFOG_rater1=sum([FOG_annotations{1}.EndTime_Ss_msec-FOG_annotations{1}.BeginTime_Ss_msec]);
 agreement_info.nrFOG_rater2=height(FOG_annotations{2});
 agreement_info.durFOG_rater2=sum([FOG_annotations{2}.EndTime_Ss_msec-FOG_annotations{2}.BeginTime_Ss_msec]);
+agreement_info.nrFOG_agreed=height(FOG_agreed_t); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
 agreement_info.durFOG_agreed=sum(FOG_summed_v2==3)/sf;
+agreement_info.nrFOG_disagreed_rater1=height(FOG_disagreed_t(FOG_disagreed_t.rater==1,:)); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
 agreement_info.durFOG_disagreed_rater1=sum(FOG_summed_v2==1)/sf;
+agreement_info.nrFOG_disagreed_rater2=height(FOG_disagreed_t(FOG_disagreed_t.rater==2,:)); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
 agreement_info.durFOG_disagreed_rater2=sum(FOG_summed_v2==2)/sf;
 agreement_info.total_duration=total_duration;
 
@@ -295,6 +306,10 @@ agreement_info.total_duration=total_duration;
 [kappa, pabak]=kappacoefficient(agreement_info);
 agreement_info.kappa=kappa;
 agreement_info.pabak = pabak;
+
+% calculate %agreement on trigger and type
+agreement_info.agreement_trigger = sum(~strcmp(FOG_agreed_t.check_trigger, 'check_trigger'))/height(FOG_agreed_t);
+agreement_info.agreement_type = sum(~strcmp(FOG_agreed_t.check_type, 'check_type'))/height(FOG_agreed_t);
 
 % display
 fprintf('Agreement info of file %s: \n', name)
