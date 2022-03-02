@@ -32,16 +32,52 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 % - option to visualize/always visualize? use time vector that corresponds
 % to ELAN? but also depends on offset master media file (so uncheck)
 % - check script with empty annotation files
-
+%% Turn on for debugging VS
+% tolerance_sec=2;
+% filename_agreement_table=agreement_table;
+% ID=subjects(VSnmmr2).name; 
+% correction='include';
 %% set-up:
 sf=1000; % choose sampling frequency
 ts=(1/sf); % time steps 
 tolerance=tolerance_sec*sf;  
- warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
+warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames'); % Tegen een errormelding
 
+opts_rater2 = detectImportOptions(filename_rater2);         % read the import options 
+opts_rater2 = setvartype(opts_rater2,{'FOG_Trigger','FOG_Type'},'char');   % set to char, default is otherwise double
+opts_rater1 = detectImportOptions(filename_rater1);
+opts_rater1 = setvartype(opts_rater1,{'FOG_Trigger','FOG_Type'},'char');
+
+annotations{1}=readtable(filename_rater1, opts_rater1);
+annotations{2}=readtable(filename_rater2, opts_rater2);
 %% collect the annotations of these files
-annotations{1}=readtable(filename_rater1, 'ReadVariableNames', 1, 'HeaderLines', 0);
-annotations{2}=readtable(filename_rater2, 'ReadVariableNames', 1, 'HeaderLines', 0);
+% annotations{1}=readtable(filename_rater1, 'ReadVariableNames', 1, 'HeaderLines', 0);
+% annotations{2}=readtable(filename_rater2, 'ReadVariableNames', 1, 'HeaderLines', 0);
+%% Check the headers and make an uniform version
+% Variable names are crucial to be called upon
+for Z=1:2
+    lijst_headerE=annotations{1,Z}.Properties.VariableNames;
+      
+    TF_raterA = contains(lijst_headerE,'_msec');
+    TF_raterB = contains(lijst_headerE,'_Msec');       % If export differs
+    TF_rater1=TF_raterA+TF_raterB;
+    
+    indxtime=find(TF_rater1);
+    
+    % Indien het correcte exportformat is gekozen, zullen de eerste 2
+    % indices altijd de juiste zijn. Overschrijven naar engelse benaming.
+    annotations{1,Z}.Properties.VariableNames(indxtime(1)) = {'BeginTime_msec'};
+    annotations{1,Z}.Properties.VariableNames(indxtime(2)) = {'EndTime_msec'};
+    
+    fix2=contains(lijst_headerE,'ait'); % Check voor Gait_task, 'ait' is onafhankelijk van hoofdletters
+    indxgait=find(fix2);
+    annotations{1,Z}.Properties.VariableNames(indxgait) = {'gait_task'};
+     
+    % Verwijderen voor de volgende meting
+    clear TF_rater1 TF_raterA TF_raterB indxtime fix2 indxgait
+end
+
+
 for i=1:2
   % only select FOG annotations & notes
   FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.FOG_Trigger(:))|~ismissing(annotations{i}.FOG_Trigger(:)),:);
@@ -52,13 +88,16 @@ for i=1:2
     warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type for rater %.0d', i)
     display(FOG_annotations{i}(idx,:))
   end
+  
+  % Emilie: Onderstaand nodig? Gezien duur er ook gewoon al uit komt. Of zo
+  % laten?
   % calculate total duration based on the gait tasks
   gait_tasks{i}=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
   if isempty(gait_tasks{i})
     warning('No gait_tasks were found for rater %.0d. Assuming that the gait_task ended after the last FOG event.', i)
-    duration_gait_tasks{i}=max(FOG_annotations{i}.EndTime_Ss_msec);
+    duration_gait_tasks{i}=max(FOG_annotations{i}.EndTime_msec);
   else
-    duration_gait_tasks{i}=sum(gait_tasks{i}.EndTime_Ss_msec-gait_tasks{i}.BeginTime_Ss_msec);
+    duration_gait_tasks{i}=sum(gait_tasks{i}.EndTime_msec-gait_tasks{i}.BeginTime_msec);
   end
 end
 
@@ -71,13 +110,13 @@ if ~isempty(gait_tasks{1}) & ~isempty(gait_tasks{2})
     fprintf('total duration of rater 2: %d \n', round(duration_gait_tasks{2}));
   end
   total_duration = duration_gait_tasks{1};
-  endtime = max(gait_tasks{1}.EndTime_Ss_msec);
+  endtime = max(gait_tasks{1}.EndTime_msec);
   gait_tasks=gait_tasks{1};
 elseif ~isempty(gait_tasks{1}) | ~isempty(gait_tasks{2})
   rater = find([~isempty(gait_tasks{1})  ~isempty(gait_tasks{2})]);
   warning('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration', rater)
   total_duration = duration_gait_tasks{rater};
-  endtime = max(gait_tasks{rater}.EndTime_Ss_msec);
+  endtime = max(gait_tasks{rater}.EndTime_msec);
   gait_tasks=gait_tasks{rater};
 elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
   warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended after the last FOG event. Be carefull with the interpretation of the agreement coefficients.')
@@ -87,27 +126,28 @@ elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
     endtime = 0;
     total_duration = 0;
   end
-  gait_tasks=table(0, endtime, 'VariableNames', {'BeginTime_Ss_msec', 'EndTime_Ss_msec'});
+  gait_tasks=table(0, endtime, 'VariableNames', {'BeginTime_msec', 'EndTime_msec'});
 end
 
-%% convert annotations to boolean vectors based on the given sampling frequency
-t=[0:1/sf:endtime+1]; % time vector (add 1 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
-boolvec_task=nan(1,length(t)); % boolean vector including all time points
-% add extra column with begin sample and end sample of gait tasks
-gait_tasks.BeginTime_sample = round(gait_tasks.BeginTime_Ss_msec*sf + 1);
-gait_tasks.EndTime_sample = round(gait_tasks.EndTime_Ss_msec*sf + 1);
-% make boolvec 0 during gait_tasks
+% convert annotations to boolean vectors based on the given sampling frequency
+t=(0:1:endtime+1)*ts; % time vector (add 1 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
+boolvec_task=nan(1,(length(t))); % boolean vector including all time points
+
+% Use column with msec for samples
 for i=1:height(gait_tasks)
-  boolvec_task(gait_tasks.BeginTime_sample(i):gait_tasks.EndTime_sample(i)) = 0; 
+    boolvec_task(gait_tasks.BeginTime_msec(i):gait_tasks.EndTime_msec(i))=0;
 end
+
 for i=1:2
-  % add extra column with begin sample and end sample of FOG annotation
-  FOG_annotations{i}.BeginTime_sample=round(FOG_annotations{i}.BeginTime_Ss_msec*sf+1);
-  FOG_annotations{i}.EndTime_sample=round(FOG_annotations{i}.EndTime_Ss_msec*sf+1);
+  % add extra column with begin sample and end sample of FOG annotation, nu
+  % overbodig?
+  % FOG_annotations{i}.BeginTime_msec=round(FOG_annotations{i}.BeginTime_Ss_msec*sf+1);
+  % FOG_annotations{i}.EndTime_msec=round(FOG_annotations{i}.EndTime_Ss_msec*sf+1);
+  
   % create a boolean vector with the FOG annotations of this rater
   boolvec_FOG=boolvec_task;
   for k=1:height(FOG_annotations{i})
-    boolvec_FOG(FOG_annotations{i}.BeginTime_sample(k):FOG_annotations{i}.EndTime_sample(k))=1;
+    boolvec_FOG((FOG_annotations{i}.BeginTime_msec(k)+1):(FOG_annotations{i}.EndTime_msec(k)+1))=1;
   end
   FOG_vector{i}=boolvec_FOG + boolvec_task; % + boolvec_task to make sure that FOGs falling outside the gait_task are made nan
   % make sure all FOG events go back to 0 before gait_task ends
@@ -172,29 +212,38 @@ end
 
 % find the agreed and disagreed FOG's
 FOG_agreed = (FOG_corrected==2) + boolvec_task;
-FOG_disagreed = (FOG_corrected==1) + boolvec_task;
-    
-%% visualize
-[path, name, ext]=fileparts(filename_combined);
-figure;
-ax(1)=subplot(4,1,1); plot(t, FOG_vector{1}, 'Color', '#EDB120'); ylim([-1 2]); ylabel('FOG rater 1');title(name);
-ax(2)=subplot(4,1,2); plot(t, FOG_vector{2},  'Color','#0072BD'); ylim([-1 2]);ylabel('FOG rater 2'); 
-ax(3)=subplot(4,1,3); plot(t, FOG_agreed,  'Color','#77AC30'); ylim([-1 2]);ylabel('FOG agreed')
-ax(4)=subplot(4,1,4); plot(t, FOG_disagreed, 'Color', '#A2142F'); ylim([-1 2]);ylabel('FOG disagreed')
-linkaxes(ax)
-xlabel('time (in sec)');
-
-    
+FOG_disagreed = (FOG_corrected==1) + boolvec_task;    
 %% convert FOG disagreed to a table and add the rater, trigger and type for this FOG
 [beginsample, endsample]=vec2event(FOG_disagreed);% find beginsample and endsample of each event
 n=length(beginsample);
-FOG_disagreed_t=table(beginsample', endsample',nan(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), 'VariableNames', {'BeginTime_sample', 'EndTime_sample','rater', 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type', 'check_trigger', 'check_type','NOTES_rater1', 'NOTES_rater2'});% convert into table
+%% eerst pre-allocaten
+varnames2 = {'BeginTime_msec', 'EndTime_msec','rater', 'FOG_agreed_Trigger', ...
+    'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type', 'check_trigger', 'check_type','NOTES_rater1', 'NOTES_rater2'};
+vartypes2(1,[1:3])={'double'}; 
+vartypes2(1,[4:11])={'string'};  
+FOG_disagreed_t=table('Size', [n, length(vartypes2)], 'VariableNames', varnames2, 'VariableTypes', vartypes2);
+FOG_disagreed_t.BeginTime_msec=beginsample';
+FOG_disagreed_t.EndTime_msec=endsample';
+
+% varnames = {'Tier','BeginTime_msec','EndTime_msec', 'Annotation'};
+% vartypes(1,[2,3])={'double'};
+% vartypes(1,[1,4])={'string'};
+% FOG_disagreed_t2=table('Size', [1, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
+%%
 for k=1:height(FOG_disagreed_t)
   % find annotations that fall within this event
   idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
   idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
+  
   if length(idx_rater1)==1 & isempty(idx_rater2)
-    FOG_disagreed_t.rater(k)=1;
+%      FOG_disagreed_t2.Tier(k)='rater';
+%      FOG_disagreed_t2.Annotation(k)='rater 1';
+%      FOG_disagreed_t2.Tier(k+1)='FOG_disagreed_Trigger';
+%      FOG_disagreed_t2.Annotation(k+1)=FOG_annotations{1}.FOG_Trigger(idx_rater1);
+%      FOG_disagreed_t2.Tier(k+2)='FOG_disagreed_Type';
+%      FOG_disagreed_t2.Annotation(k+2)=FOG_annotations{1}.FOG_Type(idx_rater1);
+    
+     FOG_disagreed_t.rater(k)=1;
     FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{1}.FOG_Trigger(idx_rater1);
     FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{1}.FOG_Type(idx_rater1);
     try
@@ -215,7 +264,10 @@ end
 %% convert FOG agreed to a table and check whether trigger and type for this FOG of both raters was the same (if not combine both values and check_trigger/check_type=true)
 [beginsample, endsample]=vec2event(FOG_agreed);% find beginsample and endsample of each event
 n=length(beginsample);
-FOG_agreed_t=table(beginsample', endsample', nan(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1), cell(n,1),cell(n,1), cell(n,1), 'VariableNames', {'BeginTime_sample', 'EndTime_sample', 'rater', 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type',  'check_trigger', 'check_type', 'NOTES_rater1', 'NOTES_rater2'});% convert into table
+FOG_agreed_t=table('Size', [n, length(vartypes2)], 'VariableNames', varnames2, 'VariableTypes', vartypes2);
+FOG_agreed_t.BeginTime_msec=beginsample';
+FOG_agreed_t.EndTime_msec=endsample';
+
 for k=1:height(FOG_agreed_t)
   % find annotations of the two raters that fall within this event
   idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
@@ -231,8 +283,8 @@ for k=1:height(FOG_agreed_t)
     FOG_agreed_t.check_trigger(k)={'check_trigger'};
     % combine both values to one string
     trig_combi=triggers{1};
-    for t=2:length(triggers)
-      trig_combi=[trig_combi ' / ' triggers{t}];
+    for J=2:length(triggers)
+      trig_combi=[trig_combi ' / ' triggers{J}];
     end
     FOG_agreed_t.FOG_agreed_Trigger(k)={trig_combi};
   end
@@ -244,8 +296,8 @@ for k=1:height(FOG_agreed_t)
     FOG_agreed_t.check_type(k)={'check_type'};
     % combine both values to one string
     type_combi=types{1};
-    for t=2:length(types)
-      type_combi=[type_combi ' / ' types{t}];
+    for H=2:length(types)
+      type_combi=[type_combi ' / ' types{H}];
     end
     FOG_agreed_t.FOG_agreed_Type(k)={type_combi};
   end
@@ -256,26 +308,148 @@ for k=1:height(FOG_agreed_t)
     FOG_agreed_t.NOTES_rater2(k)=FOG_annotations{2}.NOTES(idx_rater2);
   end
 end
+%% Picture the results
+color_discuss = sscanf('9b9b9b','%2x%2x%2x',[1 3])/255;
+[~, name, ~]=fileparts(filename_combined);
+setPos=[-9, 0.5, 0];    % position of y labels
+
+figure(4);
+ax(1)=subplot(4,1,1);
+if length(FOG_annotations{1}.BeginTime_msec) == 0
+    % Don't plot, no FOG annotated
+else
+for M=1:length(FOG_annotations{1}.BeginTime_msec)       % plot ieder stukje afzonderlijk
+    clear t2 FilledArea timedata FOG_stukje
+    timedata=t(FOG_annotations{1}.BeginTime_msec(M):FOG_annotations{1}.EndTime_msec(M));
+    FOG_stukje=ones(size(timedata));
+    t2=[timedata, fliplr(timedata)];
+    FilledArea=[FOG_stukje, zeros(size(timedata))];
+        ax(4)=subplot(4,1,1); 
+    fill(t2, FilledArea, 'k','LineStyle','none')
+    hold on
+end 
+hold off
+end
+Y1=ylabel('Rater 1','rotation', 0,'HorizontalAlignment','left',...
+    'pos', setPos); 
+title(name); set(gca,'FontSize',20);
+set(gca,'YTickLabel',[]);
+
+ax(2)=subplot(4,1,2); 
+if length(FOG_annotations{1}.BeginTime_msec) == 0
+    % Don't plot, no FOG annotated
+else
+for K=1:length(FOG_annotations{2}.BeginTime_msec)
+    clear t2 FilledArea timedata FOG_stukje
+    timedata=t(FOG_annotations{2}.BeginTime_msec(K):FOG_annotations{2}.EndTime_msec(K));
+    FOG_stukje=ones(size(timedata));
+    t2=[timedata, fliplr(timedata)];
+    FilledArea=[FOG_stukje, zeros(size(timedata))];
+    
+    ax(4)=subplot(4,1,2); 
+    fill(t2, FilledArea, 'k','LineStyle','none')
+    hold on
+end 
+hold off
+end
+Y2=ylabel('Rater 2','rotation', 0,'HorizontalAlignment','left',...
+    'pos', setPos); 
+set(gca,'FontSize',20);
+set(gca,'YTickLabel',[]);
+
+ax(3)=subplot(4,1,3);
+if length(FOG_agreed_t.BeginTime_msec) == 0
+    % Don't plot, no FOG annotated
+else
+for P=1:length(FOG_agreed_t.BeginTime_msec)
+    clear t2 FilledArea timedata FOG_stukje
+    timedata=t(FOG_agreed_t.BeginTime_msec(P):FOG_agreed_t.EndTime_msec(P));
+    FOG_stukje=ones(size(timedata));
+    t2=[timedata, fliplr(timedata)];
+    FilledArea=[FOG_stukje, zeros(size(timedata))];
+    
+    ax(4)=subplot(4,1,3); 
+    fill(t2, FilledArea, 'k','LineStyle','none')
+    hold on
+end 
+hold off
+end
+Y3=ylabel([{'FOG', 'agreed'}],'rotation', 0,'HorizontalAlignment','left',...
+    'pos', setPos);
+set(gca,'FontSize',20);
+set(gca,'YTickLabel',[]);
+
+ax(4)=subplot(4,1,4);
+for L=1:length(FOG_disagreed_t.BeginTime_msec)
+    clear t2 FilledArea timedata FOG_stukje
+    timedata=t(FOG_disagreed_t.BeginTime_msec(L):FOG_disagreed_t.EndTime_msec(L));
+    FOG_stukje=ones(size(timedata));
+    t2=[timedata, fliplr(timedata)];
+    FilledArea=[FOG_stukje, zeros(size(timedata))];
+    
+    ax(4)=subplot(4,1,4); 
+    fill(t2, FilledArea, color_discuss,'LineStyle','none')
+    hold on
+end 
+hold off
+Y4=ylabel([{'FOG', 'to discuss'}],'rotation', 0,'HorizontalAlignment','left',...
+    'pos', setPos);
+xlim([t(1) t(end)])
+ylim ([0 1])
+linkaxes(ax)
+xlabel('Time (in seconds)');
+set(gca,'YTickLabel',[]);
+set(gca,'FontSize',20);
+
 
 %% combine the agreed and disagreed tables into one table
 % add timing in seconds (instead of samples)
-FOG_agreed_t.BeginTime_Ss_msec=(FOG_agreed_t.BeginTime_sample(:)-1)/sf;
-FOG_agreed_t.EndTime_Ss_msec=(FOG_agreed_t.EndTime_sample(:)-1)/sf;
-FOG_disagreed_t.BeginTime_Ss_msec=(FOG_disagreed_t.BeginTime_sample(:)-1)/sf;
-FOG_disagreed_t.EndTime_Ss_msec=(FOG_disagreed_t.EndTime_sample(:)-1)/sf;
+% Check voor de -1 
+FOG_agreed_t.BeginTime_msec=(FOG_agreed_t.BeginTime_msec(:)-1)/sf;
+FOG_agreed_t.EndTime_msec=(FOG_agreed_t.EndTime_msec(:)-1)/sf;
+FOG_disagreed_t.BeginTime_msec=(FOG_disagreed_t.BeginTime_msec(:)-1)/sf;
+FOG_disagreed_t.EndTime_msec=(FOG_disagreed_t.EndTime_msec(:)-1)/sf;
+%%
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
+%% Rearrange for easy import ELAN
+varnames = {'Tier','BeginTime_msec','EndTime_msec', 'Annotation'};
+vartypes(1,[2,3])={'double'};
+vartypes(1,[1,4])={'string'};
+FOG_Compared=table('Size', [1, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
+% Voor de melding voor bijschrijven van variabelen onderdrukken
+id='MATLAB:table:RowsAddedExistingVars';
+warning('off',id);
+%% Alle kolommen met missende data pakken voor omzetten?
+for KL=1:height(FOG_all_t)
+[r,~]=size(FOG_Compared);
+if r == 1
+    r=0;     % for the start of the table
+end
+TF = ~ismissing(FOG_all_t(KL,:),{'' '.' [] NaN missing ""}); % identifeer missende
+indxTF=find(TF);
+indxTF=indxTF(3:end);
+datawaardes=FOG_all_t(KL,indxTF);
+FOG_Compared.Tier(r+1:r+width(datawaardes))=datawaardes.Properties.VariableNames';
+FOG_Compared.Annotation(r+1:r+width(datawaardes))=table2array(datawaardes(1,1:width(datawaardes)));
+FOG_Compared.BeginTime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,1));
+FOG_Compared.EndTime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,2));
+end
+%%
 % add extra notes
 for k=1:height(NOTES{1})
-  FOG_all_t(end+1,:)=[repmat({NaN}, 1,3), repmat({[]}, 1,6) NOTES{1}.NOTES(k) {[]} NOTES{1}.BeginTime_Ss_msec(k) NOTES{1}.EndTime_Ss_msec(k)];
+  FOG_all_t(end+1,:)=[ (NOTES{1}.BeginTime_msec(k)/sf) (NOTES{1}.EndTime_msec(k)/sf)...
+      1, repmat({[]}, 1,6) NOTES{1}.NOTES(k) {[]}];
 end
+
 for k=1:height(NOTES{2})
-  FOG_all_t(end+1,:)=[repmat({NaN}, 1,3), repmat({[]}, 1,7) NOTES{2}.NOTES(k) NOTES{2}.BeginTime_Ss_msec(k) NOTES{2}.EndTime_Ss_msec(k)];
+  FOG_all_t(end+1,:)=[(NOTES{2}.BeginTime_msec(k)/sf) (NOTES{2}.EndTime_msec(k))/sf ...
+      2, repmat({[]}, 1,7) NOTES{2}.NOTES(k)];
 end
 
 % export the table
 writetable(FOG_all_t, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
-
+writetable(FOG_Compared, [filename_combined '_2'],  'FileType', 'text', 'Delimiter', '\t')
 
 %% fill in agreement table
 % create new vector that also contains information about the rater of the
@@ -283,7 +457,10 @@ writetable(FOG_all_t, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
 FOG_summed_v2=FOG_vector{1}+2*FOG_vector{2}; % 0=agreed no FOG; 3=agreed FOG; 1=FOG only annotated by rater 1; 2=FOG only annotated by rater 2
 
 % make an agreement table for this file
-varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', 'durFOG_rater2', 'nrFOG_agreed', 'durFOG_agreed', 'nrFOG_disagreed_rater1', 'durFOG_disagreed_rater1', 'nrFOG_disagreed_rater2', 'durFOG_disagreed_rater2', 'total_duration', 'kappa', 'pabak', 'agreement_trigger', 'agreement_type'};
+varnames={'subject', 'filename', 'nrFOG_rater1', 'durFOG_rater1', 'nrFOG_rater2', ...
+    'durFOG_rater2', 'nrFOG_agreed', 'durFOG_agreed', 'nrFOG_disagreed_rater1', ...
+    'durFOG_disagreed_rater1', 'nrFOG_disagreed_rater2', 'durFOG_disagreed_rater2', ...
+    'total_duration', 'kappa', 'ICC', 'agreement_trigger', 'agreement_type'};
 vartypes=[repmat({'string'}, [1,2]), repmat({'double'}, [1,15])];
 agreement_info=table('Size', [1, 17], 'VariableNames', varnames, 'VariableTypes', vartypes);
 
@@ -291,9 +468,9 @@ agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
 agreement_info.filename={name};
 agreement_info.nrFOG_rater1=height(FOG_annotations{1});
-agreement_info.durFOG_rater1=sum([FOG_annotations{1}.EndTime_Ss_msec-FOG_annotations{1}.BeginTime_Ss_msec]);
+agreement_info.durFOG_rater1=sum([FOG_annotations{1}.EndTime_msec-FOG_annotations{1}.BeginTime_msec]);
 agreement_info.nrFOG_rater2=height(FOG_annotations{2});
-agreement_info.durFOG_rater2=sum([FOG_annotations{2}.EndTime_Ss_msec-FOG_annotations{2}.BeginTime_Ss_msec]);
+agreement_info.durFOG_rater2=sum([FOG_annotations{2}.EndTime_msec-FOG_annotations{2}.BeginTime_msec]);
 agreement_info.nrFOG_agreed=height(FOG_agreed_t); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
 agreement_info.durFOG_agreed=sum(FOG_summed_v2==3)/sf;
 agreement_info.nrFOG_disagreed_rater1=height(FOG_disagreed_t(FOG_disagreed_t.rater==1,:)); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
@@ -303,9 +480,10 @@ agreement_info.durFOG_disagreed_rater2=sum(FOG_summed_v2==2)/sf;
 agreement_info.total_duration=total_duration;
 
 % calculate kappa correlation coefficient of this file
-[kappa, pabak]=kappacoefficient(agreement_info);
+kappa=kappacoefficient(agreement_info);
 agreement_info.kappa=kappa;
-agreement_info.pabak = pabak;
+
+%agreement_info.ICC=;
 
 % calculate %agreement on trigger and type
 agreement_info.agreement_trigger = sum(~strcmp(FOG_agreed_t.check_trigger, 'check_trigger'))/height(FOG_agreed_t);
@@ -339,17 +517,18 @@ function     [beginsample, endsample]=vec2event(boolvec)
     tmp = diff([0 boolvec 0]);
     beginsample = find(tmp==+1);
     endsample = find(tmp==-1) - 1;
+
     
 % OVERLAPPINGEVT
 function [idx] = overlappingevt(annotations, beginsample, endsample)
 % find the indices of annotation events that fall within the event with the
 % given [beginsample endsample].
-  idx=find(([annotations.BeginTime_sample]<=beginsample & [annotations.EndTime_sample]>beginsample) |... % annotation includes the beginsample
-    ([annotations.BeginTime_sample]<endsample & [annotations.EndTime_sample]>=endsample) | ... % annotation includes the endsample
-    ([annotations.BeginTime_sample]>=beginsample & [annotations.EndTime_sample]<endsample)); % annotation falls within the event
+  idx=find(([annotations.BeginTime_msec]<=beginsample & [annotations.EndTime_msec]>beginsample) |... % annotation includes the beginsample
+    ([annotations.BeginTime_msec]<endsample & [annotations.EndTime_msec]>=endsample) | ... % annotation includes the endsample
+    ([annotations.BeginTime_msec]>=beginsample & [annotations.EndTime_msec]<endsample)); % annotation falls within the event
 
 % KAPPACOEFFICIENT
-function [kappa, pabak] =kappacoefficient(agreement_t)
+function kappa =kappacoefficient(agreement_t)
 total_duration=sum(agreement_t.total_duration);
 
 a=sum(agreement_t.durFOG_agreed);
@@ -362,7 +541,8 @@ Pyes=((a+c)/total_duration)*((a+b)/total_duration);
 Pno=((b+d)/total_duration)*((c+d)/total_duration);
 
 kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
-pabak= 2*Po - 1; % prevalence-ajusted bias-adjusted kappa
+
+
 
 % SPEARMANCORRELATION
 function [corr_nrFOG, corr_durFOG]=spearmancorrelation(agreement_t)
