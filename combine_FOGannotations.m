@@ -43,6 +43,8 @@ tolerance=tolerance_sec*sf;
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames'); % Surpress error notification
 
 flag_nogaittask = false;
+flag_notrigger = false;
+flag_notype = false;
 
 %% import annotations
 opts_rater1 = detectImportOptions(filename_rater1); % read the import options
@@ -67,12 +69,38 @@ for i=1:2
     end
     
     FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.fog_trigger(:))|~ismissing(annotations{i}.fog_trigger(:)),:);
-    % check if each FOG has been labeled with a FOG_Trigger and a FOG_Type
-    idx=find(ismissing(FOG_annotations{i}.fog_trigger(:))|ismissing(FOG_annotations{i}.fog_type));
+    % check if each FOG has been labeled with a FOG_Trigger
+    idx = find(ismissing(FOG_annotations{i}.fog_trigger(:)));
     if ~isempty(idx)
-        warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type for rater %.0d', i)
+      if length(idx) == height(FOG_annotations{i})
+        warning('Rater %.0d did not characterize any FOG by trigger', i)
+        flag_notrigger = true;
+      else 
+        warning('Not all FOG events were both annotated for FOG_Trigger for rater %.0d', i)
         display(FOG_annotations{i}(idx,:))
+      end
     end
+    % check if each FOG has been labeled with a FOG_Type
+    idx = find(ismissing(FOG_annotations{i}.fog_type(:)));
+    if ~isempty(idx)
+      if length(idx) == height(FOG_annotations{i})
+        warning('Rater %.0d did not characterize any FOG by type', i)
+        flag_notype = true;
+      else 
+        warning('Not all FOG events were both annotated for FOG_Type for rater %.0d', i)
+        display(FOG_annotations{i}(idx,:))
+      end
+    end
+%     % check if each FOG has been labeled with a FOG_Trigger and a FOG_Type
+%     idx=find(ismissing(FOG_annotations{i}.fog_trigger(:))|ismissing(FOG_annotations{i}.fog_type));
+%     if ~isempty(idx)
+%       if length(idx)==height(FOG_annotations{i}) % only fog trigger/type was annotated by this rater
+%         if 
+%       else
+%         warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type for rater %.0d', i)
+%         display(FOG_annotations{i}(idx,:))
+%       end
+%     end
     
     % calculate total duration based on the gait tasks
     gait_tasks{i}=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
@@ -102,7 +130,7 @@ elseif ~isempty(gait_tasks{1}) | ~isempty(gait_tasks{2})
     endtime = max(gait_tasks{rater}.endtime_msec);
     gait_tasks=gait_tasks{rater};
 elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
-    warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended after the last FOG event. The agreement parameters are not correctly calculated.')
+    warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended after the last FOG event. The agreement parameters will not be calculated and the visualization might be wrong.')
     flag_nogaittask = true;
     total_duration = max([duration_gait_tasks{1}, duration_gait_tasks{2}]);
     endtime = total_duration;
@@ -188,6 +216,7 @@ FOG_disagreed = (FOG_corrected==1) + boolvec_task;
 n=length(beginsample);
 
 % pre-allocate output
+clear varnames vartypes
 varnames = {'begintime_msec', 'endtime_msec','rater', 'FOG_agreed_Trigger', ...
     'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type', 'check_trigger', 'check_type','NOTES_rater1', 'NOTES_rater2'};
 vartypes(1,[1:3])={'double'};
@@ -235,31 +264,31 @@ for k=1:height(FOG_agreed_t)
     if isempty(idx_rater1) | isempty(idx_rater2)
         error('No annotations were found for this agreed FOG episode')
     end
+    % check trigger
     triggers=[FOG_annotations{1}.fog_trigger(idx_rater1); FOG_annotations{2}.fog_trigger(idx_rater2)];
     triggers=unique(triggers); % unique values for triggers
-    if length(triggers)==1 % the same value was given for FOG_Trigger
-        FOG_agreed_t.FOG_agreed_Trigger(k)=triggers;
+    if length(triggers)==1 | flag_notrigger % the same value was given for FOG_Trigger/only one annotator characterized the trigger 
+        FOG_agreed_t.FOG_agreed_Trigger(k)=triggers(~ismissing(triggers));
     else % a different value was given for trigger
         FOG_agreed_t.check_trigger(k)={'check_trigger'};
         % combine both values to one string
         trig_combi=triggers{1};
-        for J=2:length(triggers)
-            trig_combi=[trig_combi ' / ' triggers{J}];
+        for j=2:length(triggers)
+            trig_combi=[trig_combi ' / ' triggers{j}];
         end
         FOG_agreed_t.FOG_agreed_Trigger(k)={trig_combi};
     end
-    %%
+    % check type
     types=[FOG_annotations{1}.fog_type(idx_rater1); FOG_annotations{2}.fog_type(idx_rater2)];
     types=unique(types);% unique values for types
-    %%
-    if length(types)==1 % the same value was given for FOG_Type
-        FOG_agreed_t.FOG_agreed_Type(k)=types;
+    if length(types)==1 | flag_notype % the same value was given for FOG_Type/only one annotator characterized the type
+        FOG_agreed_t.FOG_agreed_Type(k)=types(~ismissing(types));
     else  % a different value was given for type
         FOG_agreed_t.check_type(k)={'check_type'};
         % combine both values to one string
         type_combi=types{1};
-        for H=2:length(types)
-            type_combi=[type_combi ' / ' types{H}];
+        for h=2:length(types)
+            type_combi=[type_combi ' / ' types{h}];
         end
         FOG_agreed_t.FOG_agreed_Type(k)={type_combi};
     end
@@ -394,7 +423,9 @@ gait_tasks.begintime_msec=gait_tasks.begintime_msec;
 gait_tasks.endtime_msec=gait_tasks.endtime_msec;
 
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
+
 %% Rearrange for easy import in ELAN
+clear varnames vartypes
 varnames = {'Tier','begintime_msec','endtime_msec', 'Annotation'};
 vartypes(1,[2,3])={'double'};
 vartypes(1,[1,4])={'string'};
@@ -421,6 +452,7 @@ for KL=1:height(FOG_all_t)
     FOG_Compared.begintime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,1));
     FOG_Compared.endtime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,2));
 end
+
 %% Add gait tasks
 if ~flag_nogaittask
 for LM=1:height(gait_tasks)
@@ -450,6 +482,7 @@ extra_rater1(indx_raters,:)=[];
 extra_raters = [extra_rater1; extra_rater2];
 
 FOG_Compared=[FOG_Compared; extra_raters];
+
 %% Write notes to file if notes are not empty.
 NOTES_rater1 = tableNOTES(annotations{1,1}, Extra_rows, 1);
 NOTES_rater2 = tableNOTES(annotations{1,2}, Extra_rows, 2);
@@ -514,8 +547,16 @@ end
 % agreement_info.kappa=kappa;
 
 % calculate %agreement on trigger and type
-agreement_info.agreement_trigger = sum(~strcmp(FOG_agreed_t.check_trigger, 'check_trigger'))/height(FOG_agreed_t);
-agreement_info.agreement_type = sum(~strcmp(FOG_agreed_t.check_type, 'check_type'))/height(FOG_agreed_t);
+if flag_notrigger
+  agreement_info.agreement_trigger = nan;
+else
+  agreement_info.agreement_trigger = sum(~strcmp(FOG_agreed_t.check_trigger, 'check_trigger'))/height(FOG_agreed_t);
+end
+if flag_notype
+  agreement_info.agreement_type = nan;
+else 
+  agreement_info.agreement_type = sum(~strcmp(FOG_agreed_t.check_type, 'check_type'))/height(FOG_agreed_t);
+end
 
 % display
 fprintf('Agreement info of file %s: \n', name)
