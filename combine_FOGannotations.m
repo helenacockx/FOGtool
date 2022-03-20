@@ -91,22 +91,12 @@ for i=1:2
         display(FOG_annotations{i}(idx,:))
       end
     end
-%     % check if each FOG has been labeled with a FOG_Trigger and a FOG_Type
-%     idx=find(ismissing(FOG_annotations{i}.fog_trigger(:))|ismissing(FOG_annotations{i}.fog_type));
-%     if ~isempty(idx)
-%       if length(idx)==height(FOG_annotations{i}) % only fog trigger/type was annotated by this rater
-%         if 
-%       else
-%         warning('Not all FOG events were both annotated for FOG_Trigger and FOG_Type for rater %.0d', i)
-%         display(FOG_annotations{i}(idx,:))
-%       end
-%     end
     
     % calculate total duration based on the gait tasks
     gait_tasks{i}=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
     if isempty(gait_tasks{i})
         warning('No gait_tasks were found for rater %.0d', i)
-        duration_gait_tasks{i}=nan;
+        duration_gait_tasks{i}=max(FOG_annotations{i}.endtime_msec)+1000;
     else
         duration_gait_tasks{i}=sum(gait_tasks{i}.endtime_msec-gait_tasks{i}.begintime_msec);
     end
@@ -125,12 +115,12 @@ if ~isempty(gait_tasks{1}) & ~isempty(gait_tasks{2})
     gait_tasks=gait_tasks{1};
 elseif ~isempty(gait_tasks{1}) | ~isempty(gait_tasks{2})
     rater = find([~isempty(gait_tasks{1})  ~isempty(gait_tasks{2})]);
-    warning('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration', rater)
+    warning('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration.', rater)
     total_duration = duration_gait_tasks{rater};
     endtime = max(gait_tasks{rater}.endtime_msec);
     gait_tasks=gait_tasks{rater};
 elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
-    warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended after the last FOG event. The agreement parameters will not be calculated and the visualization might be wrong.')
+    warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended 1 sec after the last FOG event. The agreement parameters will not be calculated and the visualization might be wrong.')
     flag_nogaittask = true;
     total_duration = max([duration_gait_tasks{1}, duration_gait_tasks{2}]);
     endtime = total_duration;
@@ -144,10 +134,9 @@ end
 % convert annotations to boolean vectors based on the given sampling frequency
 t=(0:1:endtime+1)*ts; % time vector (add 1 extra seconds to make sure that the boolvec_FOG goes back to zero after the last FOG)
 boolvec_task=nan(1,(length(t))); % boolean vector including all time points
-
-% Use column with msec for samples
+% make boolvec 0 during gait_tasks
 for i=1:height(gait_tasks)
-    boolvec_task(gait_tasks.begintime_msec(i)+1:gait_tasks.endtime_msec(i)+1)=0;
+    boolvec_task(round(gait_tasks.begintime_msec(i))+1:round(gait_tasks.endtime_msec(i))+1)=0; % +1 because going from msec to samples
 end
 
 for i=1:2
@@ -159,7 +148,7 @@ for i=1:2
     % create a boolean vector with the FOG annotations of this rater
     boolvec_FOG=boolvec_task;
     for k=1:height(FOG_annotations{i})
-        boolvec_FOG((FOG_annotations{i}.begintime_msec(k)+1):(FOG_annotations{i}.endtime_msec(k)+1))=1;
+        boolvec_FOG((round(FOG_annotations{i}.begintime_msec(k))+1):(round(FOG_annotations{i}.endtime_msec(k))+1))=1; % +1 because going from msec to samples
     end
     % check if all FOGs are falling insside the gait_task
     if sum(boolvec_FOG ==1 & isnan(boolvec_task))>0
