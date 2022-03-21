@@ -92,8 +92,14 @@ for i=1:2
       end
     end
     
+    % convert table from wide to long format
+    varnames = annotations{i}.Properties.VariableNames; % find extra tiers names
+    annotations_long{i} = stack(annotations{i}, varnames(~contains(varnames, {'begintime', 'endtime', 'duration'})), 'IndexVariableName', 'Tier', 'NewDataVariableName', 'Annotation');
+    annotations_long{i} = rmmissing(annotations_long{i});
+    annotations_long{i} = annotations_long{i}(:, {'begintime_msec', 'endtime_msec', 'Tier', 'Annotation'});% remove extra columns
+    
     % calculate total duration based on the gait tasks
-    gait_tasks{i}=annotations{i}(~ismissing(annotations{i}.gait_task(:)),:);
+    gait_tasks{i}=annotations_long{i}(annotations_long{i}.Tier == 'gait_task', :);
     if isempty(gait_tasks{i})
         warning('No gait_tasks were found for rater %.0d', i)
         duration_gait_tasks{i}=max(FOG_annotations{i}.endtime_msec)+1000;
@@ -206,34 +212,28 @@ n=length(beginsample);
 
 % pre-allocate output
 clear varnames vartypes
-varnames = {'begintime_msec', 'endtime_msec','rater', 'FOG_agreed_Trigger', ...
-    'FOG_agreed_Type', 'FOG_disagreed_Trigger', 'FOG_disagreed_Type', 'check_trigger', 'check_type','NOTES_rater1', 'NOTES_rater2'};
-vartypes(1,[1:3])={'double'};
-vartypes(1,[4:11])={'string'};
-FOG_disagreed_t=table('Size', [n, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
-FOG_disagreed_t.begintime_msec=beginsample'-1;
-FOG_disagreed_t.endtime_msec=endsample'-1;
+varnames = {'begintime_msec', 'endtime_msec','Tier', 'Annotation', 'rater'};
+vartypes(1,[1:2 5])={'double'};
+vartypes(1,[3:4])={'string'};
+FOG_disagreed_t=table('Size', [2*n, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes); % 2*n because one row FOG_Trigger, and one row FOG_type
+FOG_disagreed_t.Tier = repmat({'FOG_disagreed_Trigger'; 'FOG_disagreed_Type'}, n, 1);
+FOG_disagreed_t.begintime_msec=repelem(beginsample'-1, 2,1); % 2 rows for each FOG episode
+FOG_disagreed_t.endtime_msec=repelem(endsample'-1,2,1);
 
 % find rater, trigger and type of this FOG
-for k=1:height(FOG_disagreed_t)
+for k=1:n
     % find annotations that fall within this event
     idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
     idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
     
     if length(idx_rater1)==1 & isempty(idx_rater2) % this is an annotation from rater 1       
-        FOG_disagreed_t.rater(k)=1;
-        FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{1}.fog_trigger(idx_rater1);
-        FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{1}.fog_type(idx_rater1);
-        try
-            FOG_disagreed_t.NOTES_rater1(k)=FOG_annotations{1}.notes(idx_rater1);
-        end
+        FOG_disagreed_t.rater(2*k-1:2*k)=1;
+        FOG_disagreed_t.Annotation(2*k-1)=FOG_annotations{1}.fog_trigger(idx_rater1);
+        FOG_disagreed_t.Annotation(2*k)=FOG_annotations{1}.fog_type(idx_rater1);
     elseif isempty(idx_rater1) & length(idx_rater2)==1 % this is an annotation from rater 2
-        FOG_disagreed_t.rater(k)=2;
-        FOG_disagreed_t.FOG_disagreed_Trigger(k)=FOG_annotations{2}.fog_trigger(idx_rater2);
-        FOG_disagreed_t.FOG_disagreed_Type(k)=FOG_annotations{2}.fog_type(idx_rater2);
-        try
-            FOG_disagreed_t.NOTES_rater2(k)=FOG_annotations{2}.notes(idx_rater2);
-        end
+        FOG_disagreed_t.rater(2*k-1:2*k)=2;
+        FOG_disagreed_t.Annotation(2*k-1)=FOG_annotations{2}.fog_trigger(idx_rater2);
+        FOG_disagreed_t.Annotation(2*k)=FOG_annotations{2}.fog_type(idx_rater2);
     else
         error('Multiple annotations were found for this disagreed FOG episode') 
     end
@@ -242,11 +242,12 @@ end
 %% convert FOG agreed to a table and check whether trigger and type for this FOG of both raters was the same (if not combine both values and check_trigger/check_type=true)
 [beginsample, endsample]=vec2event(FOG_agreed);% find beginsample and endsample of each event
 n=length(beginsample);
-FOG_agreed_t=table('Size', [n, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
-FOG_agreed_t.begintime_msec=beginsample'-1;
-FOG_agreed_t.endtime_msec=endsample'-1;
+FOG_agreed_t=table('Size', [2*n, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes); % 2*n because one row FOG_Trigger, and one row FOG_type
+FOG_agreed_t.Tier = repmat({'FOG_agreed_Trigger'; 'FOG_agreed_Type'}, n, 1);
+FOG_agreed_t.begintime_msec=repelem(beginsample'-1, 2,1); % 2 rows for each FOG episode
+FOG_agreed_t.endtime_msec=repelem(endsample'-1,2,1);
 
-for k=1:height(FOG_agreed_t)
+for k=1:n
     % find annotations of the two raters that fall within this event
     idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
     idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
@@ -257,37 +258,38 @@ for k=1:height(FOG_agreed_t)
     triggers=[FOG_annotations{1}.fog_trigger(idx_rater1); FOG_annotations{2}.fog_trigger(idx_rater2)];
     triggers=unique(triggers); % unique values for triggers
     if length(triggers)==1 | flag_notrigger % the same value was given for FOG_Trigger/only one annotator characterized the trigger 
-        FOG_agreed_t.FOG_agreed_Trigger(k)=triggers(~ismissing(triggers));
+        FOG_agreed_t.Annotation(2*k-1)=triggers(~ismissing(triggers));
     else % a different value was given for trigger
-        FOG_agreed_t.check_trigger(k)={'check_trigger'};
+        % make extra annotation to check trigger
+        FOG_agreed_t(end+1,:) = FOG_agreed_t(2*k-1,:);
+        FOG_agreed_t.Tier(end) = {'check_annotation'};
+        FOG_agreed_t.Annotation(end)={'check_trigger'};
         % combine both values to one string
         trig_combi=triggers{1};
         for j=2:length(triggers)
             trig_combi=[trig_combi ' / ' triggers{j}];
         end
-        FOG_agreed_t.FOG_agreed_Trigger(k)={trig_combi};
+        FOG_agreed_t.Annotation(2*k-1)={trig_combi};
     end
     % check type
     types=[FOG_annotations{1}.fog_type(idx_rater1); FOG_annotations{2}.fog_type(idx_rater2)];
     types=unique(types);% unique values for types
     if length(types)==1 | flag_notype % the same value was given for FOG_Type/only one annotator characterized the type
-        FOG_agreed_t.FOG_agreed_Type(k)=types(~ismissing(types));
+        FOG_agreed_t.Annotation(2*k)=types(~ismissing(types));
     else  % a different value was given for type
-        FOG_agreed_t.check_type(k)={'check_type'};
+        % make extra annotation to check type
+        FOG_agreed_t(end+1,:) = FOG_agreed_t(2*k,:);
+        FOG_agreed_t.Tier(end) = {'check_annotation'};
+        FOG_agreed_t.Annotation(end)={'check_type'};
         % combine both values to one string
         type_combi=types{1};
         for h=2:length(types)
             type_combi=[type_combi ' / ' types{h}];
         end
-        FOG_agreed_t.FOG_agreed_Type(k)={type_combi};
-    end
-    try
-        FOG_agreed_t.NOTES_rater1(k)=FOG_annotations{1}.notes(idx_rater1);
-    end
-    try
-        FOG_agreed_t.NOTES_rater2(k)=FOG_annotations{2}.notes(idx_rater2);
+        FOG_agreed_t.Annotation(2*k)={type_combi};
     end
 end
+
 %% Picture the results
 color_discuss = sscanf('9b9b9b','%2x%2x%2x',[1 3])/255;
 [~, name, ~]=fileparts(filename_combined);
@@ -401,94 +403,36 @@ xlim([t(1) t(end)])
 ylim ([0 1])
 xlabel('Time (in seconds)');
 linkaxes(ax);
-%% combine the agreed and disagreed tables into one table
-% add timing in seconds (instead of samples)?? Required?
-% Check voor de -1
-FOG_agreed_t.begintime_msec=(FOG_agreed_t.begintime_msec(:));
-FOG_agreed_t.endtime_msec=(FOG_agreed_t.endtime_msec(:));
-FOG_disagreed_t.begintime_msec=(FOG_disagreed_t.begintime_msec(:));
-FOG_disagreed_t.endtime_msec=(FOG_disagreed_t.endtime_msec(:));
-gait_tasks.begintime_msec=gait_tasks.begintime_msec;
-gait_tasks.endtime_msec=gait_tasks.endtime_msec;
 
-FOG_all_t=[FOG_agreed_t; FOG_disagreed_t];
+%% combine the agreed and disagreed tables into one table and extra tiers
+% combine agreed and disagreed FOG episodes
+FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
 
-%% Rearrange for easy import in ELAN
-clear varnames vartypes
-varnames = {'Tier','begintime_msec','endtime_msec', 'Annotation'};
-vartypes(1,[2,3])={'double'};
-vartypes(1,[1,4])={'string'};
-FOG_Compared=table('Size', [1, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
-Extra_rows=table('Size', [1, length(vartypes)], 'VariableNames', varnames, 'VariableTypes', vartypes);
+ % add gait_tasks
+gait_tasks.rater = repelem(nan, height(gait_tasks),1);
+final_table = [FOG_all_t; gait_tasks]; 
 
-% Supress warning
-warning('off','MATLAB:table:RowsAddedExistingVars');
-
-% Add all freezing to the export
-for KL=1:height(FOG_all_t)
-    clear r
-    [r,~]=size(FOG_Compared);
-    if r == 1
-        r=0;     % for the start of the table
-    end
-    % identify cells without data per row
-    TF = ~ismissing(FOG_all_t(KL,:),{'' '.' [] NaN missing ""});
-    indxTF=find(TF);
-    indxTF=indxTF(3:end);
-    datawaardes=FOG_all_t(KL,indxTF);
-    FOG_Compared.Tier(r+1:r+width(datawaardes))=datawaardes.Properties.VariableNames';
-    FOG_Compared.Annotation(r+1:r+width(datawaardes))=table2array(datawaardes(1,1:width(datawaardes)));
-    FOG_Compared.begintime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,1));
-    FOG_Compared.endtime_msec(r+1:r+width(datawaardes),1)=ones(width(datawaardes),1).*table2array(FOG_all_t(KL,2));
+% add extra tiers
+% FIXME: maybe add option in the GUI to include extra tiers of annotator 1,
+% 2 or both?
+% FIXME: make different tiers for notes rater 1 and 2?
+all_extra_tiers = [];
+for i=1:2 
+  extra_tiers = annotations_long{i}(all(annotations_long{i}.Tier ~= {'fog_trigger', 'fog_type', 'gait_task'},2),:);
+  extra_tiers.rater = repelem(nan,height(extra_tiers),1);
+  all_extra_tiers = [all_extra_tiers; extra_tiers];
 end
+% remove duplicate rows
+all_extra_tiers = sortrows(all_extra_tiers);
+all_extra_tiers_rounded = table(round(all_extra_tiers.begintime_msec, -2), round(all_extra_tiers.endtime_msec, -2), all_extra_tiers.Annotation); % annotations can differ by max 100 msec
+[~, unique_idx] = unique(all_extra_tiers_rounded, 'rows');
+all_extra_tiers = all_extra_tiers(unique_idx,:);
+final_table = [final_table; all_extra_tiers];
 
-%% Add gait tasks
-if ~flag_nogaittask
-for LM=1:height(gait_tasks)
-    clear r TF
-    [r,~]=size(FOG_Compared);
-    if r == 1
-        r=0;     % for the start of the table
-    end
-    % identify cells without data per row
-    TF = ~ismissing(gait_tasks(LM,:),{'' '.' [] NaN missing ""});
-    indxTF=find(TF);
-    indxTF=indxTF(3:end);
-    datawaardes2=gait_tasks(LM,indxTF);
-    FOG_Compared.Tier(r+1:r+width(datawaardes2))=datawaardes2.Properties.VariableNames';
-    FOG_Compared.Annotation(r+1:r+width(datawaardes2))=table2array(datawaardes2(1,1:width(datawaardes2)));
-    FOG_Compared.begintime_msec(r+1:r+width(datawaardes2),1)=ones(width(datawaardes2),1).*table2array(gait_tasks(LM,1));
-    FOG_Compared.endtime_msec(r+1:r+width(datawaardes2),1)=ones(width(datawaardes2),1).*table2array(gait_tasks(LM,2));
-end
-end
-% Check the headers for tiers in files besides previously stated to add to export
-extra_rater1 = table_extra(annotations{1,1}, Extra_rows);
-extra_rater2 = table_extra(annotations{1,2}, Extra_rows);
-
-% Check for duplicate annotations
-indx_raters=find(ismember(extra_rater1,extra_rater2));
-extra_rater1(indx_raters,:)=[];
-extra_raters = [extra_rater1; extra_rater2];
-
-FOG_Compared=[FOG_Compared; extra_raters];
-
-%% Write notes to file if notes are not empty.
-NOTES_rater1 = tableNOTES(annotations{1,1}, Extra_rows, 1);
-NOTES_rater2 = tableNOTES(annotations{1,2}, Extra_rows, 2);
-
-if height(NOTES_rater1) == 1 && NOTES_rater1.endtime_msec == 0
-    % notes are empty
-else 
-FOG_Compared=[FOG_Compared; NOTES_rater1];
-end
-
-if height(NOTES_rater2) == 1 && NOTES_rater2.endtime_msec == 0
-    % notes are empty
-else 
-FOG_Compared=[FOG_Compared; NOTES_rater2];
-end
-
-writetable(FOG_Compared, filename_combined,  'FileType', 'text', 'Delimiter', '\t')
+% save table
+header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation', 'rater'};
+final_table_cell = [header_names; table2cell(final_table)];
+writecell(final_table_cell, filename_combined, 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
 
 %% fill in agreement table
 % create new vector that also contains information about the rater of the
@@ -509,16 +453,16 @@ agreement_info.subject={ID};
 [path, name, ext]=fileparts(filename_combined);
 agreement_info.filename={name};
 agreement_info.number_FOG_rater1=height(FOG_annotations{1});
-agreement_info.duration_FOG_rater1=sum([FOG_annotations{1}.endtime_msec-FOG_annotations{1}.begintime_msec]);
+agreement_info.duration_FOG_rater1=sum([FOG_annotations{1}.endtime_msec-FOG_annotations{1}.begintime_msec])/1000;
 agreement_info.number_FOG_rater2=height(FOG_annotations{2});
-agreement_info.duration_FOG_rater2=sum([FOG_annotations{2}.endtime_msec-FOG_annotations{2}.begintime_msec]);
-agreement_info.number_FOG_agreed=height(FOG_agreed_t); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
-agreement_info.duration_FOG_agreed=sum(FOG_summed_v2==3)/sf;
-agreement_info.number_FOG_disagreed_rater1=height(FOG_disagreed_t(FOG_disagreed_t.rater==1,:)); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
-agreement_info.duration_FOG_disagreed_rater1=sum(FOG_summed_v2==1)/sf;
-agreement_info.number_FOG_disagreed_rater2=height(FOG_disagreed_t(FOG_disagreed_t.rater==2,:)); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
-agreement_info.duration_FOG_disagreed_rater2=sum(FOG_summed_v2==2)/sf;
-agreement_info.total_duration=total_duration;
+agreement_info.duration_FOG_rater2=sum([FOG_annotations{2}.endtime_msec-FOG_annotations{2}.begintime_msec])/1000;
+agreement_info.number_FOG_agreed=sum(strcmp(FOG_agreed_t.Tier, 'FOG_agreed_Trigger')); % only for info, not to calculate agreement (because uses adjusted FOG annotations)
+agreement_info.duration_FOG_agreed=sum(FOG_summed_v2==3)/1000; % in sec
+agreement_info.number_FOG_disagreed_rater1=sum(FOG_disagreed_t.rater==1)/2; % only for info, not to calculate agreement (because uses adjusted FOG annotations)
+agreement_info.duration_FOG_disagreed_rater1=sum(FOG_summed_v2==1)/1000;
+agreement_info.number_FOG_disagreed_rater2=sum(FOG_disagreed_t.rater==2)/2; % only for info, not to calculate agreement (because uses adjusted FOG annotations)
+agreement_info.duration_FOG_disagreed_rater2=sum(FOG_summed_v2==2)/1000;
+agreement_info.total_duration=total_duration/1000;
 
 [agreement_info.positive_agreement, agreement_info.negative_agreement,...
     agreement_info.prevalence_index] = agreementParameters(agreement_info);
@@ -539,17 +483,17 @@ end
 if flag_notrigger
   agreement_info.agreement_trigger = nan;
 else
-  agreement_info.agreement_trigger = sum(~strcmp(FOG_agreed_t.check_trigger, 'check_trigger'))/height(FOG_agreed_t);
+  agreement_info.agreement_trigger = (agreement_info.number_FOG_agreed-sum(strcmp(FOG_agreed_t.Annotation, 'check_trigger')))/agreement_info.number_FOG_agreed;
 end
 if flag_notype
   agreement_info.agreement_type = nan;
 else 
-  agreement_info.agreement_type = sum(~strcmp(FOG_agreed_t.check_type, 'check_type'))/height(FOG_agreed_t);
+  agreement_info.agreement_type = (agreement_info.number_FOG_agreed-sum(strcmp(FOG_agreed_t.Annotation, 'check_type')))/agreement_info.number_FOG_agreed;
 end
 
 % display
 fprintf('Agreement info of file %s: \n', name)
-display(table(varnames(3:end)', agreement_info{:,3:end}', 'VariableNames', {'annotation_info', 'value'}))
+display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
 
 % load the big agreement table if present
 if exist(filename_agreement_table, 'file')
@@ -576,46 +520,6 @@ tmp = diff([0 boolvec 0]);
 beginsample = find(tmp==+1);
 endsample = find(tmp==-1) - 1;
 
-% TABLE_EXTRA
-function Extra_rows = table_extra(annotation, Extra_rows)
-% Check if other tiers are added to the annotations
-listVarAnn1=annotation.Properties.VariableNames;
-listVarKnown={'begintime_msec','endtime_msec','gait_task','FOG_Trigger','FOG_Type','NOTES'};
-match1  = find(ismember(listVarAnn1, listVarKnown) == 0);
-for G=1:length(match1)
-    indxdata1=find(~ismissing(annotation.(listVarAnn1{match1(G)})));
-    
-    for H = 1:length(indxdata1)
-        [r,~]=size(Extra_rows);
-        if r == 1
-            r = 0;     % for the start of the table
-        end
-        Extra_rows.Tier(r+H) = listVarAnn1{match1(G)};
-        Extra_rows.Annotation(r+H) = annotation.(listVarAnn1{match1(G)})(indxdata1(H));
-        Extra_rows.begintime_msec(r+H) = annotation.begintime_msec(indxdata1(H));
-        Extra_rows.endtime_msec(r+H) = annotation.endtime_msec(indxdata1(H));
-    end
-end
-
-% TABLE_NOTES
-function Extra_rows = tableNOTES(annotation, Extra_rows, raternmbr)
-indxdata1=find(~ismissing(annotation.NOTES));
-if isempty(indxdata1)
-    fprintf('%s%d\n','No notes were created by rater ', raternmbr)
-else
-for H = 1:length(indxdata1)
-    [r,~]=size(Extra_rows);
-    if r == 1
-        r = 0;     % for the start of the table
-    end
-    Extra_rows.Tier(r+H) = {sprintf('%s%d', 'NOTES_rater', raternmbr)};
-    Extra_rows.Annotation(r+H) = annotation.(listVarAnn1{match1})(indxdata1(H));
-    Extra_rows.begintime_msec(r+H) = annotation.begintime_msec(indxdata1(H));
-    Extra_rows.endtime_msec(r+H) = annotation.endtime_msec(indxdata1(H));
-end
-end
-
-
 % OVERLAPPINGEVT
 function [idx] = overlappingevt(annotations, beginsample, endsample)
 % find the indices of annotation events that fall within the event with the
@@ -637,8 +541,6 @@ neg_agree = 2*d/(n-(a-d));
 
 prev_indx =(a-d)/n;
 
-
-
 % KAPPACOEFFICIENT
 function kappa =kappacoefficient(agreement_t)
 total_duration=sum(agreement_t.total_duration);
@@ -653,5 +555,3 @@ Pyes=((a+c)/total_duration)*((a+b)/total_duration);
 Pno=((b+d)/total_duration)*((c+d)/total_duration);
 
 kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
-
-
