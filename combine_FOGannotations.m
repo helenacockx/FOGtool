@@ -542,7 +542,9 @@ xlabel('Time (in seconds)');
 linkaxes(ax);
 set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', fntsz);
 ImageResult.WindowState = 'maximized';
-legend([block_agreed, block_disagreed], 'Definite FOG','Discuss', 'Location','best')
+try
+  legend([block_agreed, block_disagreed], 'Definite FOG','Discuss', 'Location','best')
+end
 if strcmp(SaveImage{1}, 'yes') == 1
 saveas(ImageResult,[string(SaveImage{2})+ '.png']);
 end
