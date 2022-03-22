@@ -303,20 +303,22 @@ PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, ts, SaveImage)
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
+FOG_all_t=removevars(FOG_all_t, 'rater'); % remove rater from table, so discussion in ELAN is blind for this
 
  % add gait_tasks
-gait_tasks.rater = repelem(nan, height(gait_tasks),1);
 final_table = [FOG_all_t; gait_tasks]; 
 
-% add extra tiers
-% FIXME: maybe add option in the GUI to include extra tiers of annotator 1,
-% 2 or both?
-% FIXME: make different tiers for notes rater 1 and 2?
+% add notes and extra tiers 
 all_extra_tiers = [];
 for i=1:2 
-  extra_tiers = annotations_long{i}(all(annotations_long{i}.Tier ~= {'fog_trigger', 'fog_type', 'gait_task'},2),:);
-  extra_tiers.rater = repelem(nan,height(extra_tiers),1);
-  all_extra_tiers = [all_extra_tiers; extra_tiers];
+  notes = annotations_long{i}(annotations_long{i}.Tier=='notes',:);
+  if i==1
+    notes.Tier = categorical(repmat("NOTES_rater1", height(notes),1));
+  elseif i==2
+    notes.Tier = categorical(repmat("NOTES_rater2", height(notes),1));
+  end
+  extra_tiers = annotations_long{i}(all(annotations_long{i}.Tier ~= {'fog_trigger', 'fog_type', 'gait_task', 'notes'},2),:);
+  all_extra_tiers = [all_extra_tiers; notes; extra_tiers];
 end
 % remove duplicate rows
 all_extra_tiers = sortrows(all_extra_tiers);
@@ -326,7 +328,7 @@ all_extra_tiers = all_extra_tiers(unique_idx,:);
 final_table = [final_table; all_extra_tiers];
 
 % save table
-header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation', 'rater'};
+header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation'};
 final_table_cell = [header_names; table2cell(final_table)];
 writecell(final_table_cell, filename_combined, 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
 
