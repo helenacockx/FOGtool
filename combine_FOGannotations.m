@@ -578,15 +578,14 @@ prev_indx =(a-d)/n;
 
 % KAPPACOEFFICIENT
 function kappa =kappacoefficient(agreement_t)
-total_duration=sum(agreement_t.total_duration);
+n=sum(agreement_t.total_duration);
 
 a=sum(agreement_t.durFOG_agreed);
 b=sum(agreement_t.durFOG_disagreed_rater1);
 c=sum(agreement_t.durFOG_disagreed_rater2);
-d=total_duration-a-b-c;
+d=n-a-b-c;
 
-Po=(a+d)/total_duration;
-Pyes=((a+c)/total_duration)*((a+b)/total_duration);
-Pno=((b+d)/total_duration)*((c+d)/total_duration);
+Po=(a+d)/n;
+Pc=(((a+c)*(a+b))/n + ((b+d)*(c+d))/n)/n;
 
-kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
+kappa=(Po-Pc)/(1-Pc);
