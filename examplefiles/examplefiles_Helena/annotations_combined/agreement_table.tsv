@@ -1,0 +1,3 @@
+subject	filename	positive_agreement	negative_agreement	prevalence_index	agreement_trigger	agreement_type	number_FOG_rater1	number_FOG_rater2	number_FOG_agreed	number_FOG_disagreed_rater1	number_FOG_disagreed_rater2	duration_FOG_rater1	duration_FOG_rater2	duration_FOG_agreed	duration_FOG_disagreed_rater1	duration_FOG_disagreed_rater2	total_duration
+PD06	sub-PD06_annotations-combined	0	0.992231279364928	-0.984582334267775	NaN	NaN	0	9	0	0	9	0	25.081	0	0	25.09	1627.354
+PD10	sub-PD10_annotations-combined	0.566020295705827	0.963435921756567	-0.844587986919109	0.75	0.916666666666667	15	17	12	4	14	84.5839999999998	168.541	71.646	12.953	96.912	1628.941

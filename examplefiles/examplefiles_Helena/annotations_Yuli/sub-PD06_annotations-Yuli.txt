@@ -1,0 +1,109 @@
+Begin Time - ss.msec	End Time - ss.msec	NOTES	Unexpected_movements	FOG_Trigger	FOG_Type	gait_event	gait_task	lslevent
+0.0	1.0							FOG
+0.0	408.547						FOG_Course	
+62.634	62.717					start_walking		
+62.717	63.717					first_heel		
+78.417	82.067					turn_180_R		
+101.617	102.617					doorway		
+116.767	119.983					turn_180_L		
+137.3	138.3					doorway		
+154.633	155.633					stop_walking		
+172.367	175.9					turn_180_L		
+187.422	188.422					start_walking		
+204.867	205.867					doorway		
+222.117	225.783					turn_180_R		
+242.833	243.833					doorway		
+258.217	261.95					turn_180_L		
+278.633	279.633					stop_walking		
+298.55	299.55					doorway		
+311.661	312.661					start_walking		
+327.183	331.067					turn_180_L		
+347.883	348.883					doorway		
+364.55	368.483					turn_180_R		
+385.28	386.41			FOG_Doorway	Shuffling			
+387.25	388.25					doorway		
+406.2	407.2					stop_walking		
+896.014	1299.477						FOG_Course	
+958.168	958.381					start_walking		
+958.381	959.381					first_heel		
+974.497	975.497					doorway		
+990.531	994.014					turn_180_L		
+1010.075	1010.861			FOG_Doorway	Shuffling			
+1011.381	1012.381					doorway		
+1028.347	1031.481					turn_180_R		
+1047.514	1048.514					stop_walking		
+1067.381	1068.381					doorway		
+1080.292	1081.292					start_walking		
+1096.147	1099.364					turn_180_R		
+1115.216	1115.79	short		FOG_Doorway	Shuffling			
+1116.564	1117.564					doorway		
+1133.164	1136.547					turn_180_L		
+1152.714	1153.714					doorway		
+1170.264	1171.264					stop_walking		
+1187.531	1192.331					turn_180_L		
+1202.124	1203.124					start_walking		
+1220.114	1221.114					doorway		
+1235.914	1240.981					turn_180_R		
+1238.669	1239.669							FOG
+1257.3	1259.3			FOG_Doorway	Shuffling			
+1257.664	1258.664					doorway		
+1258.611	1259.611							FOG
+1277.114	1280.331					turn_180_L		
+1297.014	1298.014					stop_walking		
+1622.005	2021.609						FOG_Course	
+1684.207	1684.438					start_walking		
+1684.438	1685.438					first_heel		
+1699.572	1703.155					turn_180_L		
+1719.172	1720.172					doorway		
+1735.038	1739.105					turn_180_R		
+1756.388	1757.388					doorway		
+1774.255	1775.255					stop_walking		
+1791.105	1795.172					turn_180_R		
+1806.626	1807.626					start_walking		
+1823.055	1824.055					doorway		
+1838.588	1842.472					turn_180_L		
+1859.488	1860.488					doorway		
+1874.972	1878.738					turn_180_R		
+1895.005	1896.005					stop_walking		
+1913.038	1914.038					doorway		
+1926.815	1927.815					start_walking		
+1942.638	1946.005					turn_180_R		
+1963.422	1964.422					doorway		
+1978.938	1982.705					turn_180_R		
+1998.911	2002.153			FOG_Doorway	Trembling			
+2000.507	2000.752							FOG
+2000.752	2001.752							FOG
+2001.972	2002.972					doorway		
+2020.038	2021.038					stop_walking		
+2436.545	2852.286						FOG_Course	
+2498.976	2499.145					start_walking		
+2499.145	2500.145					first_heel		
+2516.595	2517.595					doorway		
+2534.228	2539.945					turn_180_R		
+2534.67	2539.912			FOG_180_R	Shuffling			
+2536.065	2537.065							FOG
+2557.895	2558.895					doorway		
+2574.462	2578.062					turn_180_L		
+2595.395	2596.395					stop_walking		
+2595.525	2597.569	not sure about this		FOG_Doorway	Shuffling			
+2615.062	2616.062					doorway		
+2627.34	2628.34					start_walking		
+2642.878	2646.578					turn_180_L		
+2664.028	2665.028					doorway		
+2680.978	2684.362					turn_180_R		
+2703.128	2704.128					doorway		
+2721.462	2722.462					stop_walking		
+2738.262	2744.312					turn_180_R		
+2742.031	2745.437			FOG_180_R	Shuffling			
+2744.334	2744.537							FOG
+2744.537	2745.537							FOG
+2753.708	2754.708					start_walking		
+2771.278	2772.278					doorway		
+2787.078	2791.162					turn_180_L		
+2788.599	2795.256			FOG_180_L	Shuffling			
+2789.754	2789.892							FOG
+2789.892	2790.892							FOG
+2812.928	2813.928					doorway		
+2829.812	2833.345					turn_180_R		
+2850.095	2851.095					stop_walking		
+

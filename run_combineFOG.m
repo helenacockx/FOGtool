@@ -2,14 +2,11 @@
 clear all; close all;
 addpath C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations
 
-folder_rater1='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\Helena';
-folder_rater2='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\Yuli';
-folder_combined='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\combined';
-folder_combined = 'C:\Downloads';
+folder_rater1='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_Helena';
+folder_rater2='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_Yuli';
+folder_combined='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_combined';
 
-% subjects={'PD62', 'PD61', 'PD90', 'PD77', 'PD35', 'PD46', 'PD50'};
-% subjects={'PD10', 'PD11', 'PD15', 'PD22', 'PD31', 'PD62', 'PD61', 'PD90', 'PD77', 'PD35', 'PD46', 'PD50'};
-subjects = {'PD06'};
+subjects = {'PD10', 'PD06'};
 
 tolerance_sec=2;    % Tolerance in sec (if inf --> always include/exclude when overlappping annotations)
 correction='include'; % or exclude
