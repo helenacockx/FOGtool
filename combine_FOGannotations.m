@@ -268,6 +268,7 @@ for k=1:n
         FOG_agreed_t.Tier(end) = {'check_annotation'};
         FOG_agreed_t.Annotation(end)={'check_trigger'};
         % combine both values to one string
+        triggers(cellfun(@isempty, triggers)) = {'not specified'}; % replace empty cell, by 'not specified'
         trig_combi=triggers{1};
         for j=2:length(triggers)
             trig_combi=[trig_combi ' / ' triggers{j}];
@@ -286,6 +287,7 @@ for k=1:n
         FOG_agreed_t.Tier(end) = {'check_annotation'};
         FOG_agreed_t.Annotation(end)={'check_type'};
         % combine both values to one string
+        types(cellfun(@isempty, types)) = {'not specified'}; % replace empty cell, by 'not specified'
         type_combi=types{1};
         for h=2:length(types)
             type_combi=[type_combi ' / ' types{h}];
