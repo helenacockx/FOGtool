@@ -1,0 +1,124 @@
+Begin Time - ss.msec	End Time - ss.msec	FOG_Trigger	NOTES	Unexpected_movements	gait_event	gait_task	lslevent	FOG_Type
+0.0	1.0						FOG	
+0.0	405.908					FOG_Course		
+63.216	63.248				first_heel			
+63.248	64.248				start_walking			
+76.333	82.116				turn_180_L			
+95.85	96.85				doorway			
+109.45	116.616				turn_180_R			
+133.04	134.04				doorway			
+148.716	149.716				stop_walking			
+170.41	177.714	FOG_180_R						Akinesia
+173.0	187.238				turn_180_R			
+173.111	173.382						FOG	
+173.382	174.382						FOG	
+183.553	186.09	FOG_180_R						Akinesia
+187.238	188.238				start_walking			
+200.28	201.28				doorway			
+214.2	220.316				turn_180_L			
+235.78	236.78				doorway			
+249.983	264.15				turn_180_R			
+252.666	257.379	FOG_180_R						Akinesia
+253.735	254.735						FOG	
+276.45	277.45				stop_walking			
+297.31	298.303	FOG_SH						Shuffling
+299.37	300.37				doorway			
+310.676	311.676				start_walking			
+324.233	339.966				turn_180_R			
+326.519	329.467	FOG_180_R						Trembling
+328.211	328.5						FOG	
+328.5	329.5						FOG	
+332.467	337.852	FOG_180_R						Akinesia
+353.16	354.16				doorway			
+366.983	373.366				turn_180_L			
+387.4	388.4				doorway			
+402.483	403.483				stop_walking			
+637.354	1037.232					FOG_Course		
+700.37	700.962				first_heel			
+700.962	701.962				start_walking			
+714.82	715.82				doorway			
+729.72	738.92				turn_180_R			
+750.96	751.96				doorway			
+764.804	771.387				turn_180_L			
+785.854	786.854				stop_walking			
+805.304	806.304				doorway			
+818.935	819.935				start_walking			
+833.054	839.337				turn_180_L			
+853.54	854.54				doorway			
+866.829	885.67				turn_180_R			
+869.791	880.246	FOG_180_R						Akinesia
+871.379	872.379						FOG	
+899.454	900.454				doorway			
+914.62	915.62				stop_walking			
+934.82	944.837				turn_180_L			
+948.347	949.347				start_walking			
+961.558	962.558				doorway			
+976.037	981.604				turn_180_L			
+996.584	997.584				doorway			
+1010.487	1021.737				turn_180_R			
+1012.694	1013.694						FOG	
+1034.22	1035.22				stop_walking			
+1285.842	1696.895					FOG_Course		
+1348.511	1348.625				start_walking			
+1348.625	1348.87				first_heel			
+1348.763	1349.478							
+1348.87	1349.87				doorway			
+1362.409	1368.975				turn_180_L			
+1382.775	1383.775				doorway			
+1396.909	1407.975				turn_180_R			
+1420.922	1421.922				doorway			
+1436.025	1437.025				stop_walking			
+1456.892	1470.388				turn_180_R			
+1457.967	1461.428	FOG_180_R						Akinesia
+1460.24	1460.658						FOG	
+1460.658	1461.658						FOG	
+1470.388	1471.388				start_walking			
+1485.275	1486.275				doorway			
+1499.809	1506.792				turn_180_L			
+1521.324	1522.324				doorway			
+1535.109	1547.025				turn_180_R			
+1537.415	1541.039	FOG_180_R						Shuffling
+1539.772	1540.772						FOG	
+1562.775	1563.775				stop_walking			
+1581.575	1582.575				doorway			
+1595.038	1596.038				start_walking			
+1608.125	1625.142				turn_180_R			
+1612.155	1622.779	FOG_180_R						Akinesia
+1612.458	1612.743						FOG	
+1612.743	1613.743						FOG	
+1638.428	1639.428				doorway			
+1654.159	1661.525				turn_180_L			
+1677.35	1678.35				doorway			
+1693.559	1694.559				stop_walking			
+1921.906	2334.008					FOG_Course		
+1984.713	1984.873				start_walking			
+1984.873	1985.873				first_heel			
+1998.84	1999.84				doorway			
+2013.04	2019.756				turn_180_L			
+2035.013	2036.013				doorway			
+2050.14	2065.04				turn_180_R			
+2051.324	2062.584	FOG_180_R						Akinesia
+2054.606	2055.606						FOG	
+2077.89	2078.89				stop_walking			
+2096.673	2097.673				doorway			
+2110.978	2111.978				start_walking			
+2124.906	2138.106				turn_180_R			
+2127.142	2130.584	FOG_180_R						Akinesia
+2127.916	2128.213						FOG	
+2128.213	2129.213						FOG	
+2151.272	2152.272				doorway			
+2165.256	2172.456				turn_180_L			
+2186.873	2187.873				doorway			
+2201.94	2202.94				stop_walking			
+2222.363	2226.22	FOG_180_R						Shuffling
+2223.373	2235.067				turn_180_R			
+2229.698	2231.987	FOG_180_R						Trembling
+2235.067	2236.067				start_walking			
+2250.428	2251.428				doorway			
+2265.34	2281.306				turn_180_R			
+2266.402	2278.094	FOG_180_R						Akinesia
+2267.597	2268.597						FOG	
+2294.636	2295.636				doorway			
+2310.206	2317.656				turn_180_L			
+2332.44	2333.44				stop_walking			
+
