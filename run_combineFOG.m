@@ -5,6 +5,7 @@ addpath C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotation
 folder_rater1='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\Helena';
 folder_rater2='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\Yuli';
 folder_combined='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\combined';
+folder_combined = 'C:\Downloads';
 
 % subjects={'PD62', 'PD61', 'PD90', 'PD77', 'PD35', 'PD46', 'PD50'};
 % subjects={'PD10', 'PD11', 'PD15', 'PD22', 'PD31', 'PD62', 'PD61', 'PD90', 'PD77', 'PD35', 'PD46', 'PD50'};
@@ -38,7 +39,7 @@ for s=1:length(subjects)
   for f=1:length(files{1})
     file_rater1=fullfile(files{1}(f).folder, files{1}(f).name);
     file_rater2=fullfile(files{2}(f).folder, files{2}(f).name);
-    file_combined=fullfile(folder_combined, sprintf('sub-%s_annotations-combined.tsv', subjects{s}));
+    file_combined=fullfile(folder_combined, sprintf('sub-%s_annotations-combined', subjects{s}));
     agreement_table=fullfile(folder_combined, 'agreement_table.tsv');
     combine_FOGannotations(file_rater1, file_rater2, file_combined, agreement_table, subjects{s}, 'include', 2)
   end

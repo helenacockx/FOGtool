@@ -268,6 +268,7 @@ for k=1:n
         FOG_agreed_t.Tier(end) = {'check_annotation'};
         FOG_agreed_t.Annotation(end)={'check_trigger'};
         % combine both values to one string
+        triggers(cellfun(@isempty, triggers)) = {'not specified'}; % replace empty cell, by 'not specified'
         trig_combi=triggers{1};
         for j=2:length(triggers)
             trig_combi=[trig_combi ' / ' triggers{j}];
@@ -286,6 +287,7 @@ for k=1:n
         FOG_agreed_t.Tier(end) = {'check_annotation'};
         FOG_agreed_t.Annotation(end)={'check_type'};
         % combine both values to one string
+        types(cellfun(@isempty, types)) = {'not specified'}; % replace empty cell, by 'not specified'
         type_combi=types{1};
         for h=2:length(types)
             type_combi=[type_combi ' / ' types{h}];
@@ -303,20 +305,22 @@ PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, ts, SaveImage)
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
+FOG_all_t=removevars(FOG_all_t, 'rater'); % remove rater from table, so discussion in ELAN is blind for this
 
  % add gait_tasks
-gait_tasks.rater = repelem(nan, height(gait_tasks),1);
 final_table = [FOG_all_t; gait_tasks]; 
 
-% add extra tiers
-% FIXME: maybe add option in the GUI to include extra tiers of annotator 1,
-% 2 or both?
-% FIXME: make different tiers for notes rater 1 and 2?
+% add notes and extra tiers 
 all_extra_tiers = [];
 for i=1:2 
-  extra_tiers = annotations_long{i}(all(annotations_long{i}.Tier ~= {'fog_trigger', 'fog_type', 'gait_task'},2),:);
-  extra_tiers.rater = repelem(nan,height(extra_tiers),1);
-  all_extra_tiers = [all_extra_tiers; extra_tiers];
+  notes = annotations_long{i}(annotations_long{i}.Tier=='notes',:);
+  if i==1
+    notes.Tier = categorical(repmat("NOTES_rater1", height(notes),1));
+  elseif i==2
+    notes.Tier = categorical(repmat("NOTES_rater2", height(notes),1));
+  end
+  extra_tiers = annotations_long{i}(all(annotations_long{i}.Tier ~= {'fog_trigger', 'fog_type', 'gait_task', 'notes'},2),:);
+  all_extra_tiers = [all_extra_tiers; notes; extra_tiers];
 end
 % remove duplicate rows
 all_extra_tiers = sortrows(all_extra_tiers);
@@ -326,7 +330,7 @@ all_extra_tiers = all_extra_tiers(unique_idx,:);
 final_table = [final_table; all_extra_tiers];
 
 % save table
-header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation', 'rater'};
+header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation'};
 final_table_cell = [header_names; table2cell(final_table)];
 writecell(final_table_cell, filename_combined, 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
 
@@ -540,7 +544,9 @@ xlabel('Time (in seconds)');
 linkaxes(ax);
 set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', fntsz);
 ImageResult.WindowState = 'maximized';
-legend([block_agreed, block_disagreed], 'Definite FOG','Discuss', 'Location','best')
+try
+  legend([block_agreed, block_disagreed], 'Definite FOG','Discuss', 'Location','best')
+end
 if strcmp(SaveImage{1}, 'yes') == 1
 saveas(ImageResult,[string(SaveImage{2})+ '.png']);
 end
@@ -574,15 +580,14 @@ prev_indx =(a-d)/n;
 
 % KAPPACOEFFICIENT
 function kappa =kappacoefficient(agreement_t)
-total_duration=sum(agreement_t.total_duration);
+n=sum(agreement_t.total_duration);
 
 a=sum(agreement_t.durFOG_agreed);
 b=sum(agreement_t.durFOG_disagreed_rater1);
 c=sum(agreement_t.durFOG_disagreed_rater2);
-d=total_duration-a-b-c;
+d=n-a-b-c;
 
-Po=(a+d)/total_duration;
-Pyes=((a+c)/total_duration)*((a+b)/total_duration);
-Pno=((b+d)/total_duration)*((c+d)/total_duration);
+Po=(a+d)/n;
+Pc=(((a+c)*(a+b))/n + ((b+d)*(c+d))/n)/n;
 
-kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
+kappa=(Po-Pc)/(1-Pc);
