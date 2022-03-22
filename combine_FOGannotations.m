@@ -3,32 +3,30 @@ function combine_FOGannotations(filename_rater1, filename_rater2, filename_combi
 
 % STEPS:
 % 1. export ELAN annotations as Tab-delimited text (seperate column for each tier: true; at least include begin time
-% and end time in ss.msec)
+% and end time in msec)
 % 2. combine annnotations of two raters by running this script. This will
 % generate a new .tsv file in the folder_combined that can be imported in ELAN
 % 3. import the new .tsv file in ELAN. This will generate a tier
 % 'FOG_agreed_Trigger', 'FOG_agreed_Type', 'FOG_disagreed_Trigger',
-% 'FOG_disagreed_Type', 'check_trigger', and 'check_type.
+% 'FOG_disagreed_Type', 'check_annotation', 'NOTES_rater1', 'NOTES_rater2',
+% and potential extra tiers, taken over from both raters.
 % - create new ELAN file; make sure to add the same video offsets
-% - import CSV/tab-delimited text file: tick 'FOG_agreed_Trigger' (Annotation),
-% 'FOG_agreed_Type' (Annotation), 'FOG_disagreed_Trigger' (Annotation),
-% 'FOG_disagreed_Type' (Annotation), 'check_trigger' (Annotation),
-% 'check_type' (Annotation), 'NOTES_rater1' (Annotation), 'NOTES_rater2'
-% (Annotation), 'begintime_Ss_msec' (Begin Time), 'endtime_Ss_msec'
-% (End time); specify first row of data =2; specify delimiter = tab; Skip
+% - import CSV/tab-delimited text file: the columnc should automatically be 
+% named correctly: 'Begin Time' (in msec), 'End Time' (in msec), 'Tier',
+% and 'Annotation'; specify first row of data =2; specify delimiter = tab; Skip
 % empty cells, don't create empty annotations = true.
-% 4. the third rater decides on all the annotations in FOG_disagreed_... to
-% keep it or delete it. When an annotation is flagged with 'check_type' or
-% 'check_trigger', the raters did not agree on the value of the annoation,
-% and the value of the type or trigger should be checked respectively
+% 4. the raters discuss (together with a third rater) which of the annotations
+% in FOG_disagreed_Trigger/FOG_disagreed_Type to keep it or delete.
+% When an annotation is flagged with 'check_type' or
+% 'check_trigger', the raters did not agree on the characterisation of 
+% the annoation, and the value of the type or trigger should be checked respectively
 % 5. the new file can be saved and exported again to a fileformat of
 % choice. By combining the agreed and disagreed FOG's (which have a
 % consensus now), you have all the FOG's.
 
 % TO DO:
 % - what if 'export multiple files as'
-% - option to visualize/always visualize? use time vector that corresponds
-% to ELAN? but also depends on offset master media file (so uncheck)
+
 % - check script with empty annotation files
 %% Turn on for debugging VS
 % tolerance_sec=2;
