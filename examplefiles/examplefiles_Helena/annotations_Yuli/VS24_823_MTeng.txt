@@ -1,0 +1,8 @@
+Begin Time - hh:mm:ss.ms	Begin Time - msec	End Time - hh:mm:ss.ms	End Time - msec	Duration - hh:mm:ss.ms	Duration - msec	Gait_Task	FOG_Trigger	FOG_Type	NOTES	Synchronization
+00:00:06.466	6466	00:00:08.699	8699	00:00:02.233	2233					Tapping
+00:00:19.716	19716	00:01:06.989	66989	00:00:47.273	47273	360spin_L 				
+00:00:38.399	38399	00:00:39.865	39865	00:00:01.466	1466		FOG_360_L	Shuffling		
+00:00:43.624	43624	00:00:45.657	45657	00:00:02.033	2033		FOG_360_L	Shuffling		
+00:00:46.582	46582	00:00:48.082	48082	00:00:01.500	1500		FOG_360_L	Shuffling		
+00:01:16.982	76982	00:01:52.355	112355	00:00:35.373	35373	360spin_R 				
+
