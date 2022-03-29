@@ -156,9 +156,16 @@ for i=1:2
     for k=1:height(FOG_annotations{i})
         boolvec_FOG((round(FOG_annotations{i}.begintime_msec(k))+1):(round(FOG_annotations{i}.endtime_msec(k))+1))=1; % +1 because going from msec to samples
     end
-    % check if all FOGs are falling insside the gait_task
+    % check if all FOGs are falling inside the gait_task
     if sum(boolvec_FOG ==1 & isnan(boolvec_task))>0
-      warning('%d FOG events are falling outside the gait_task and are removed from the list', numel(find(diff([boolvec_FOG ==1 & isnan(boolvec_task)])==1)))
+      startsample = find(diff([boolvec_FOG ==1 & isnan(boolvec_task)])==1);
+      idx = [];
+      for k=1:length(startsample)
+        idx = [idx; find(startsample(k)>=FOG_annotations{i}.begintime_msec & startsample(k)<=FOG_annotations{i}.endtime_msec)];
+      end
+      warning('%d FOG events are falling outside the gait_task and are trimmed or removed from the list:', numel(startsample))
+      display(FOG_annotations{i}(idx,:))
+      display(gait_events)
     end
     FOG_vector{i}=boolvec_FOG + boolvec_task; % + boolvec_task to make sure that FOGs falling outside the gait_task are made nan
     % make sure all FOG events go back to 0 before gait_task ends and
