@@ -92,6 +92,10 @@ for i=1:2
       end
     end
     
+    % check if all FOG events are seperated by at least 2 msec
+    idx = find(([FOG_annotations{i}.begintime_msec; nan] - [nan; FOG_annotations{i}.endtime_msec])<2)
+    FOG_annotations{i}.begintime_msec(idx) = FOG_annotations{i}.begintime_msec(idx)+2;
+    
     % convert table from wide to long format
     varnames = annotations{i}.Properties.VariableNames; % find extra tiers names
     annotations_long{i} = stack(annotations{i}, varnames(~contains(varnames, {'begintime', 'endtime', 'duration'})), 'IndexVariableName', 'Tier', 'NewDataVariableName', 'Annotation');
@@ -165,7 +169,7 @@ for i=1:2
       end
       warning('%d FOG events are falling outside the gait_task and are trimmed or removed from the list:', numel(startsample))
       display(FOG_annotations{i}(idx,:))
-      display(gait_events)
+      display(gait_tasks)
     end
     FOG_vector{i}=boolvec_FOG + boolvec_task; % + boolvec_task to make sure that FOGs falling outside the gait_task are made nan
     % make sure all FOG events go back to 0 before gait_task ends and
