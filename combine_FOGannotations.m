@@ -92,7 +92,7 @@ for i=1:2
     end
     
     % check if all FOG events are seperated by at least 2 msec
-    idx = find(([FOG_annotations{i}.begintime_msec; nan] - [nan; FOG_annotations{i}.endtime_msec])<2)
+    idx = find(([FOG_annotations{i}.begintime_msec; nan] - [nan; FOG_annotations{i}.endtime_msec])<2);
     FOG_annotations{i}.begintime_msec(idx) = FOG_annotations{i}.begintime_msec(idx)+2;
     
     % convert table from wide to long format
@@ -308,7 +308,7 @@ end
 %% Visualize the results
 SaveImage{1}='yes';     % To add to the function combine_FOGannotations
 SaveImage{2}={filename_combined};
-PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, ts, SaveImage)
+PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
@@ -428,235 +428,82 @@ beginsample = find(tmp==+1);
 endsample = find(tmp==-1) - 1;
 
 % PlotAnn
-function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, ts, SaveImage)
-%
+function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
+
+% open new figure
+ImageResult = figure();
+set(gca, 'color', [0.9 0.9 0.9])
 color_discuss = sscanf('9b9b9b','%2x%2x%2x',[1 3])/255;
-% Fix in final lay-out. 
-setPos=[-7.5, 0.4, 0];    % position of y labels
 
-% Turn warning about excluding colorbars, legends and non-axes off
-warning('off','MATLAB:linkaxes:RequireDataAxes'); 
-fntsz=20;
-
-% Find indices of non-gait tasks and remove from data
-indx_nonGait=isnan(FOG_agreed);
-FOG_rater1=FOG_vector{1};
-%FOG_rater1(indx_nonGait)=[];
-FOG_rater2=FOG_vector{2};
-%FOG_rater2(indx_nonGait)=[];
-FOG_agreedplot=FOG_agreed;
-%FOG_agreedplot(indx_nonGait)=[];
-FOG_disagreedplot=FOG_disagreed;
-%FOG_disagreedplot(indx_nonGait)=[];
-
-% Create a time array for the plot
-t=(0:1:length(FOG_agreedplot))*ts;
-
-% Find the begin and endsample of each freezing episode
-[beginsample_FOGagreed, endsample_FOGagreed]=vec2event(FOG_agreedplot);
-[beginsample_FOGdisagreed, endsample_FOGdisagreed]=vec2event(FOG_disagreedplot);
-[beginsample_FOG_rater1, endsample_FOG_rater1]=vec2event(FOG_rater1);
-[beginsample_FOG_rater2, endsample_FOG_rater2]=vec2event(FOG_rater2);
-
-% Create the to be filled area's
-% Pre-allocate
-timedata_rater1=cell(1, length(beginsample_FOG_rater1)); FilledArea_rater1=timedata_rater1;
-timedata_rater2=cell(1, length(beginsample_FOG_rater2)); FilledArea_rater2=timedata_rater2;
-timedata_FOG_agreed=cell(1,length(beginsample_FOGagreed)); FilledArea_FOG_agreed=timedata_FOG_agreed;
-timedata_FOG_disagreed=cell(1,length(beginsample_FOGdisagreed)); 
-FilledArea_FOG_disagreed=timedata_FOG_disagreed;
-
-for M=1:length(beginsample_FOG_rater1)
-[timedata_rater1{M}, FilledArea_rater1{M}]=DetermineFill(t,...
-    beginsample_FOG_rater1(M), endsample_FOG_rater1(M));
+% plot gait_tasks
+hold on
+for o=1:height(gait_tasks)
+  rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 0 ...
+    t(gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o)) 1],...
+    'linestyle', '-', 'FaceColor', 'w')
+  rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 2 ...
+    t(gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o)) 1],...
+    'linestyle', '-', 'FaceColor', 'w')
+  rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 4 ...
+    t(gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o)) 1],...
+    'linestyle', '-', 'FaceColor', 'w')
 end
 
-for N=1:length(beginsample_FOG_rater2)
-[timedata_rater2{N}, FilledArea_rater2{N}]=DetermineFill(t,...
-beginsample_FOG_rater2(N), endsample_FOG_rater2(N));
+% plot FOG rater 1
+[beginsample_FOG_rater1, endsample_FOG_rater1]=vec2event(FOG_vector{1});
+for o=1:length(beginsample_FOG_rater1)
+  rectangle('Position', [t(beginsample_FOG_rater1(o)) 4 ...
+    t(endsample_FOG_rater1(o)-beginsample_FOG_rater1(o)) 1],...
+    'FaceColor', 'k')
 end
 
-for O=1:length(beginsample_FOGagreed)
-    [timedata_FOG_agreed{O}, FilledArea_FOG_agreed{O}]= DetermineFill(t,...
-beginsample_FOGagreed(O), endsample_FOGagreed(O));
+% plot FOG rater 2
+[beginsample_FOG_rater2, endsample_FOG_rater2]=vec2event(FOG_vector{2});
+for o=1:length(beginsample_FOG_rater2)
+  rectangle('Position', [t(beginsample_FOG_rater2(o)) 2 ...
+    t(endsample_FOG_rater2(o)-beginsample_FOG_rater2(o)) 1],...
+    'FaceColor', 'k')
 end
 
-for P=1:length(beginsample_FOGdisagreed)
-    [timedata_FOG_disagreed{P}, FilledArea_FOG_disagreed{P}]= DetermineFill(t,...
-beginsample_FOGdisagreed(P), endsample_FOGdisagreed(P));
+% plot FOG agreed
+[beginsample_FOGagreed, endsample_FOGagreed]=vec2event(FOG_agreed);
+for o=1:length(beginsample_FOGagreed)
+  rectangle('Position', [t(beginsample_FOGagreed(o)) 0 ...
+    t(endsample_FOGagreed(o)-beginsample_FOGagreed(o)) 1],...
+    'FaceColor', 'k')
 end
-%% Create the figure
-ImageResult=figure(1);
-ax(1)=subplot(3,1,1);
-if isempty(beginsample_FOG_rater1)
-    % Don't plot, no FOG annotated by rater 1
-else
-    for K=1:length(timedata_rater1)
-        % Plot the areas
-        fill(timedata_rater1{1,K}, FilledArea_rater1{1,K}, 'k','LineStyle','none')
-        hold on
-    end
-    
-    for o=1:height(gait_tasks)
-       rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 0 ...
-    (gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o))*ts 1],...
-    'linestyle', '--')
-    end
-       
-    hold off
+
+% plot remaining grey areas
+[beginsample_FOGdisagreed, endsample_FOGdisagreed]=vec2event(FOG_disagreed);
+for o=1:length(beginsample_FOGdisagreed)
+  rectangle('Position', [t(beginsample_FOGdisagreed(o)) 0 ...
+    t(endsample_FOGdisagreed(o)-beginsample_FOGdisagreed(o)) 1],...
+    'FaceColor', color_discuss, 'EdgeColor', 'none')
 end
-ylabel('Rater 1','rotation', 0,'HorizontalAlignment','left'); %'pos', setPos
-set(gca,'YTickLabel',[]);
-set(gca,'XTickLabel',[]);
-xlim([0 t(end)])
-ylim ([0 1])
 
-ax(2)=subplot(3,1,2);
-if isempty(beginsample_FOG_rater2)
-    % Don't plot, no FOG annotated by rater 2
-else
-    clear K
-    for K=1:length(timedata_rater2)
-        % Plot the areas
-        fill(timedata_rater2{1,K}, FilledArea_rater2{1,K}, 'k','LineStyle','none')
-        hold on
-    end
-    
-    for o=1:height(gait_tasks)
-       rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 0 ...
-    (gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o))*ts 1],...
-    'linestyle', '--')
-    end
-    
-    hold off
-end
-ylabel('Rater 2','rotation', 0,'HorizontalAlignment','left');  %'pos', setPos
-set(gca,'YTickLabel',[]);
-set(gca,'XTickLabel',[]);
-ylim ([0 1])
-xlim([0 t(end)])
+% handle axes and add labels 
+ylim([-1 6])
+yticks([0.5 2.5 4.5])
+yticklabels({'outcome', 'rater 2', 'rater 1'})
+xlabel('time (in s)')
 
-% FOGs combined of both raters
-ax(3)=subplot(3,1,3);
-if isempty(beginsample_FOGagreed)
-    % Create a dummy for the legend
-    block_agreed=fill([0 1 1 0], [1 1 0 0],...
-            'k','LineStyle','none');
-        hold on
-        % Make dummy not visible
-        fill([0 1 1 0], [1 1 0 0],...
-            'w','LineStyle','none');
-else
-    for O=1:length(timedata_FOG_agreed)        
-        block_agreed=fill(timedata_FOG_agreed{1,O}, FilledArea_FOG_agreed{1,O},...
-            'k','LineStyle','none');
-        hold on
-    end
-end    
-    for o=1:height(gait_tasks)
-       rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 0 ...
-    (gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o))*ts 1],...
-    'linestyle', '--')
-    
-    end
-    
-    if isempty(beginsample_FOGdisagreed)
-        % Make dummy for the legend
-            block_disagreed=fill([0 1 1 0], [1 1 0 0],...
-            color_discuss,'LineStyle','none');
-        fill([0 1 1 0], [1 1 0 0],...
-            'w','LineStyle','none');
-    else
-        for L=1:length(timedata_FOG_disagreed)
-            block_disagreed=fill(timedata_FOG_disagreed{1,L}, FilledArea_FOG_disagreed{1,L},...
-                color_discuss,'LineStyle','none');
-        end
-        hold off
-    end
+% add legend 
+dummy_FOG = fill(0,0, 'k');
+dummy_noFOG = fill(0,0, 'w');
+dummy_discuss = fill(0, 0, color_discuss);
+legend([dummy_FOG, dummy_noFOG, dummy_discuss], {'FOG', 'no FOG', 'discuss'}, ...
+  'orientation', 'horizontal', 'Location', 'north')
 
-ylabel({'Ratings', 'combined'},'rotation', 0,'HorizontalAlignment','left');
-% 'pos', [setPos(1), 0.25, setPos(3)]
-set(gca,'YTickLabel',[]);
-ylim ([0 1])
-xlim([0 t(end)])
-xlabel('Time (in seconds)');
-linkaxes(ax);
-set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', fntsz);
-ImageResult.WindowState = 'maximized';
-legend([block_agreed, block_disagreed], 'Definite FOG','Discuss', 'Location','best')
+% format layout
+set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', 11);
+% ImageResult.WindowState = 'maximized';
+[path, name, ext]=fileparts(char(SaveImage{2}));
+title(strrep(name, '_', ' '),'fontsize', 18);
 
+% save image
 if strcmp(SaveImage{1}, 'yes') == 1
 saveas(ImageResult,[string(SaveImage{2})+ '.png']);
 end
-%% Alternatief, alles in 1 afbeelding
-%[timedata,FilledArea]= DetermineFill(t, begintime_msec, endtime_msec, upperY, lowerY);
-
-for M=1:length(beginsample_FOG_rater1)
-[timedata_rater1b{M}, FilledArea_rater1b{M}]=DetermineFill(t,...
-    beginsample_FOG_rater1(M), endsample_FOG_rater1(M), 4, 3);
-end
-
-for M=1:length(beginsample_FOG_rater2)
-[timedata_rater2b{M}, FilledArea_rater2b{M}]=DetermineFill(t,...
-    beginsample_FOG_rater2(M), endsample_FOG_rater2(M), 2.5, 1.5);
-end
-
-for O=1:length(beginsample_FOGagreed)
-    [timedata_FOG_agreedb{O}, FilledArea_FOG_agreedb{O}]= DetermineFill(t,...
-beginsample_FOGagreed(O), endsample_FOGagreed(O), 1, 0);
-end
-
-for P=1:length(beginsample_FOGdisagreed)
-    [timedata_FOG_disagreedb{P}, FilledArea_FOG_disagreedb{P}]= DetermineFill(t,...
-beginsample_FOGdisagreed(P), endsample_FOGdisagreed(P), 1, 0);
-end
-
-figure(2)
-if isempty(beginsample_FOG_rater1)
-    % Don't plot, no FOG annotated by rater 1
-else
-    for K=1:length(timedata_rater1b)
-        % Plot the areas
-        fill(timedata_rater1b{1,K}, FilledArea_rater1b{1,K}, 'k','LineStyle','none')
-        hold on
-    end
-end   
-
-    for K=1:length(timedata_rater2b)
-        % Plot the areas
-        fill(timedata_rater2b{1,K}, FilledArea_rater2b{1,K}, 'k','LineStyle','none')
-    end
-    
-    for K=1:length(timedata_FOG_agreedb)
-        % Plot the areas
-        fill(timedata_FOG_agreedb{1,K}, FilledArea_FOG_agreedb{1,K}, 'k','LineStyle','none')
-    end
-    
-    for K=1:length(timedata_FOG_disagreedb)
-        % Plot the areas
-        fill(timedata_FOG_disagreedb{1,K}, FilledArea_FOG_disagreedb{1,K}, color_discuss,'LineStyle','none')
-    end
-    
-    
-    for o=1:height(gait_tasks)
-       rectangle('Position',[t(gait_tasks.begintime_msec(o)+1) 0 ...
-    (gait_tasks.endtime_msec(o)-gait_tasks.begintime_msec(o))*ts 4],...
-    'linestyle', '--')
-    end
-       
-    hold off
-
-
-
-%DetermineFill
-function [timedata,FilledArea]= DetermineFill(t, begintime_msec, endtime_msec, upperY, lowerY)
-if nargin<5
-    upperY = 1;
-    lowerY = 0;
-end
-timedata=t(begintime_msec:endtime_msec);
-FilledArea=[ones(size(timedata))*upperY, ones(size(timedata))*lowerY];
-timedata=[timedata, fliplr(timedata)];
 
 % OVERLAPPINGEVT
 function [idx] = overlappingevt(annotations, beginsample, endsample)
