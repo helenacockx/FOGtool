@@ -2,11 +2,11 @@
 clear all; close all;
 addpath C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations
 
-folder_rater1='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_Helena';
-folder_rater2='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_Yuli';
-folder_combined='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\examplefiles_Helena\annotations_combined';
+folder_rater1='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_rater1';
+folder_rater2='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_rater2';
+folder_combined='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_combined';
 
-subjects = {'PD10', 'PD06'};
+subjects = {'VS06', 'VS08', 'VS24', 'PD06', 'PD10'};
 
 tolerance_sec=2;    % Tolerance in sec (if inf --> always include/exclude when overlappping annotations)
 correction='include'; % or exclude

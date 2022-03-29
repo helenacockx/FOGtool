@@ -1,0 +1,17 @@
+Begin Time	End Time	Tier	Annotation
+37899	39865	FOG_agreed_Trigger	FOG_360_L
+37899	39865	FOG_agreed_Type	Shuffling / Trembling
+43499	48082	FOG_agreed_Trigger	FOG_360_L
+43499	48082	FOG_agreed_Type	Shuffling
+37899	39865	check_annotation	check_type
+50996	56888	FOG_disagreed_Trigger	FOG_360_L
+50996	56888	FOG_disagreed_Type	Shuffling
+61815	66988	FOG_disagreed_Trigger	FOG_360_L
+61815	66988	FOG_disagreed_Type	Shuffling
+96240	97556	FOG_disagreed_Trigger	FOG_360_R
+96240	97556	FOG_disagreed_Type	Shuffling
+101440	101823	FOG_disagreed_Trigger	FOG_360_R
+101440	101823	FOG_disagreed_Type	Trembling
+19716	66989	gait_task	360spin_L
+76982	112355	gait_task	360spin_R
+6466	8699	synchronization	Tapping
