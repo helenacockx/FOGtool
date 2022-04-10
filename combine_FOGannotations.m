@@ -340,7 +340,7 @@ final_table = [final_table; all_extra_tiers];
 % save table
 header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation'};
 final_table_cell = [header_names; table2cell(final_table)];
-writecell(final_table_cell, filename_combined, 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
+writecell(final_table_cell, strcat(filename_combined, '_annotations-combined'), 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
 
 %% fill in agreement table
 % create new vector that also contains information about the rater of the
