@@ -1,0 +1,38 @@
+Begin Time	End Time	Tier	Annotation
+12586	23437	FOG_agreed_Trigger	FOG_360_L
+12586	23437	FOG_agreed_Type	Trembling
+26488	33607	FOG_agreed_Trigger	FOG_360_L
+26488	33607	FOG_agreed_Type	Trembling
+37246	44825	FOG_agreed_Trigger	FOG_360_L
+37246	44825	FOG_agreed_Type	Trembling
+46443	63840	FOG_agreed_Trigger	FOG_360_L / FOG_360_L FOG_360_L
+46443	63840	FOG_agreed_Type	Trembling
+65853	68543	FOG_agreed_Trigger	FOG_360_L / FOG_360_L FOG_360_L
+65853	68543	FOG_agreed_Type	Trembling
+75671	78603	FOG_agreed_Trigger	FOG_360_R
+75671	78603	FOG_agreed_Type	Trembling
+81812	88391	FOG_agreed_Trigger	FOG_360_R
+81812	88391	FOG_agreed_Type	Trembling
+91517	95065	FOG_agreed_Trigger	FOG_360_R
+91517	95065	FOG_agreed_Type	Trembling
+97850	117071	FOG_agreed_Trigger	FOG_360_R
+97850	117071	FOG_agreed_Type	Trembling
+121438	125216	FOG_agreed_Trigger	FOG_360_R
+121438	125216	FOG_agreed_Type	Trembling
+130227	132608	FOG_agreed_Trigger	FOG_360_R
+130227	132608	FOG_agreed_Type	Trembling
+136789	140922	FOG_agreed_Trigger	FOG_360_R
+136789	140922	FOG_agreed_Type	Trembling
+141900	147226	FOG_agreed_Trigger	FOG_360_R
+141900	147226	FOG_agreed_Type	Trembling
+46443	63840	check_annotation	check_trigger
+65853	68543	check_annotation	check_trigger
+63841	65852	FOG_disagreed_Trigger	FOG_360_L FOG_360_L
+63841	65852	FOG_disagreed_Type	Trembling
+78604	81811	FOG_disagreed_Trigger	FOG_360_R
+78604	81811	FOG_disagreed_Type	Trembling
+88392	91516	FOG_disagreed_Trigger	FOG_360_R
+88392	91516	FOG_disagreed_Type	Trembling
+9749	69699	gait_task	360spin_L
+71632	147831	gait_task	360spin_R
+133	1149	synchronization	No tapping

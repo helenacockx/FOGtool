@@ -1,0 +1,70 @@
+Begin Time	End Time	Tier	Annotation
+22599	52081	FOG_agreed_Trigger	FOG_360_L / FOG_Target
+22599	52081	FOG_agreed_Type	Shuffling
+60232	111229	FOG_agreed_Trigger	FOG_360_R
+60232	111229	FOG_agreed_Type	Akinesia / Shuffling
+116133	118332	FOG_agreed_Trigger	FOG_Narrow
+116133	118332	FOG_agreed_Type	Shuffling
+155465	162532	FOG_agreed_Trigger	FOG_Narrow
+155465	162532	FOG_agreed_Type	Akinesia / Trembling
+171232	243406	FOG_agreed_Trigger	FOG_360_L / FOG_Narrow
+171232	243406	FOG_agreed_Type	not specified / Akinesia
+250666	304066	FOG_agreed_Trigger	FOG_360_L / FOG_360_R
+250666	304066	FOG_agreed_Type	Akinesia / Trembling
+354065	359816	FOG_agreed_Trigger	FOG_Target / FOG_notrig
+354065	359816	FOG_agreed_Type	Akinesia / Shuffling
+363332	424499	FOG_agreed_Trigger	FOG_360_L / FOG_notrig
+363332	424499	FOG_agreed_Type	Akinesia / Trembling
+428782	459532	FOG_agreed_Trigger	FOG_360_R / FOG_Narrow / FOG_Target
+428782	459532	FOG_agreed_Type	not specified / Akinesia / Shuffling
+461599	463147	FOG_agreed_Trigger	FOG_Narrow
+461599	463147	FOG_agreed_Type	not specified / Shuffling
+529068	573278	FOG_agreed_Trigger	FOG_360_L
+529068	573278	FOG_agreed_Type	Shuffling
+579100	611540	FOG_agreed_Trigger	FOG_360_R
+579100	611540	FOG_agreed_Type	Shuffling
+22599	52081	check_annotation	check_trigger
+60232	111229	check_annotation	check_type
+155465	162532	check_annotation	check_type
+171232	243406	check_annotation	check_trigger
+171232	243406	check_annotation	check_type
+250666	304066	check_annotation	check_trigger
+250666	304066	check_annotation	check_type
+354065	359816	check_annotation	check_trigger
+354065	359816	check_annotation	check_type
+363332	424499	check_annotation	check_trigger
+363332	424499	check_annotation	check_type
+428782	459532	check_annotation	check_trigger
+428782	459532	check_annotation	check_type
+461599	463147	check_annotation	check_type
+52082	56965	FOG_disagreed_Trigger	FOG_Target
+52082	56965	FOG_disagreed_Type	Shuffling
+56967	60231	FOG_disagreed_Trigger	FOG_360_R
+56967	60231	FOG_disagreed_Type	Akinesia
+118333	121665	FOG_disagreed_Trigger	FOG_Narrow
+118333	121665	FOG_disagreed_Type	Shuffling
+122406	124023	FOG_disagreed_Trigger	FOG_Target
+122406	124023	FOG_disagreed_Type	Akinesia
+162533	171231	FOG_disagreed_Trigger	FOG_Narrow
+162533	171231	FOG_disagreed_Type	Akinesia
+243407	246549	FOG_disagreed_Trigger	FOG_360_L
+243407	246549	FOG_disagreed_Type	Akinesia
+359817	363331	FOG_disagreed_Trigger	FOG_notrig
+359817	363331	FOG_disagreed_Type	Akinesia
+459533	461598	FOG_disagreed_Trigger	FOG_Narrow
+459533	461598	FOG_disagreed_Type	
+469449	470349	FOG_disagreed_Trigger	FOG_Target
+469449	470349	FOG_disagreed_Type	Shuffling
+470403	471231	FOG_disagreed_Trigger	FOG_Target
+470403	471231	FOG_disagreed_Type	Trembling
+526365	529067	FOG_disagreed_Trigger	FOG_360_L
+526365	529067	FOG_disagreed_Type	Shuffling
+575882	579099	FOG_disagreed_Trigger	FOG_360_R
+575882	579099	FOG_disagreed_Type	Shuffling
+16482	124024	gait_task	Narrow_Course
+150599	309349	gait_task	Narrow_Course
+351649	471232	gait_task	Narrow_Course
+514798	615932	gait_task	Narrow_Course
+13715	14982	synchronization	Tapping
+123999	150599	NOTES_rater1	Omdraaien, freezing
+471265	514798	NOTES_rater1	Omdraaien met hierbij freezing

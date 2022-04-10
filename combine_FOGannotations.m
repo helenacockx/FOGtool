@@ -1,4 +1,4 @@
-function combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec)
+function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec, show_agreement)
 % Script to combine and compare annotations of two raters.
 
 % STEPS:
@@ -67,7 +67,8 @@ for i=1:2
     end
     
     FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.fog_trigger(:))|~ismissing(annotations{i}.fog_trigger(:)),:);
-
+    FOG_annotations{i} = FOG_annotations{i}(:, {'begintime_msec', 'endtime_msec', 'fog_trigger', 'fog_type'});% remove extra columns
+    
     % check if each FOG has been labeled with a FOG_Trigger
     idx = find(ismissing(FOG_annotations{i}.fog_trigger(:)));
     if ~isempty(idx)
@@ -399,8 +400,10 @@ else
 end
 
 % display
-fprintf('Agreement info of file %s: \n', name)
-display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
+if show_agreement
+  fprintf('Agreement info of file %s: \n', name)
+  display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
+end
 
 % load the big agreement table if present
 if exist(filename_agreement_table, 'file')
