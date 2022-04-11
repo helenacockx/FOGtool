@@ -373,8 +373,10 @@ agreement_info.number_FOG_disagreed_rater2=sum(FOG_disagreed_t.rater==2)/2; % on
 agreement_info.duration_FOG_disagreed_rater2=sum(FOG_summed_v2==2)/1000;
 agreement_info.total_duration=total_duration/1000;
 
-[agreement_info.positive_agreement, agreement_info.negative_agreement,...
-    agreement_info.prevalence_index] = agreementParameters(agreement_info);
+[agreement] = agreement_calculator(agreement_info);
+agreement_info.positive_agreement = agreement.pos_agree;
+agreement_info.negative_agreement = agreement.neg_agree;
+agreement_info.prevalence_index = agreement.prev_indx;
   
 if flag_nogaittask
   warning('No gait tasks were found, do not calculate agreement parameters')
@@ -383,10 +385,6 @@ if flag_nogaittask
   agreement_info.negative_agreement = nan;
   agreement_info.prevalence_index = nan;
 end
-
-% calculate kappa correlation coefficient of this file
-% kappa=kappacoefficient(agreement_info);
-% agreement_info.kappa=kappa;
 
 % calculate %agreement on trigger and type
 if flag_notrigger
@@ -516,30 +514,3 @@ function [idx] = overlappingevt(annotations, beginsample, endsample)
 idx=find(([annotations.begintime_msec]<=beginsample & [annotations.endtime_msec]>beginsample) |... % annotation includes the beginsample
     ([annotations.begintime_msec]<endsample & [annotations.endtime_msec]>=endsample) | ... % annotation includes the endsample
     ([annotations.begintime_msec]>=beginsample & [annotations.endtime_msec]<endsample)); % annotation falls within the event
-
-% AGREEMENTPARAMETERS
-function [pos_agree, neg_agree,prev_indx] = agreementParameters(agreement_t)
-n=sum(agreement_t.total_duration);
-a=sum(agreement_t.duration_FOG_agreed);
-b=sum(agreement_t.duration_FOG_disagreed_rater1);
-c=sum(agreement_t.duration_FOG_disagreed_rater2);
-d=n-a-b-c;
-
-pos_agree =2*a/(n+(a-d));
-neg_agree = 2*d/(n-(a-d));
-
-prev_indx =(a-d)/n;
-
-% KAPPACOEFFICIENT
-function kappa =kappacoefficient(agreement_t)
-n=sum(agreement_t.total_duration);
-
-a=sum(agreement_t.durFOG_agreed);
-b=sum(agreement_t.durFOG_disagreed_rater1);
-c=sum(agreement_t.durFOG_disagreed_rater2);
-d=n-a-b-c;
-
-Po=(a+d)/n;
-Pc=(((a+c)*(a+b))/n + ((b+d)*(c+d))/n)/n;
-
-kappa=(Po-Pc)/(1-Pc);
