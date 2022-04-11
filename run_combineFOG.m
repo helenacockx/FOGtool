@@ -38,6 +38,6 @@ for s=1:length(subjects)
     file_rater2=fullfile(files{2}(f).folder, files{2}(f).name);
     file_combined=fullfile(folder_combined, sprintf('sub-%s', subjects{s}));
     agreement_table=fullfile(folder_combined, 'agreement_table.tsv');
-    combine_FOGannotations(file_rater1, file_rater2, file_combined, agreement_table, subjects{s}, 'include', 2, 1)
+    combine_FOGannotations(file_rater1, file_rater2, file_combined, agreement_table, subjects{s}, 'include', 2, 1,1)
   end
 end

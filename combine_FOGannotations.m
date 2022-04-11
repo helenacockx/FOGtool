@@ -1,4 +1,4 @@
-function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec, show_agreement)
+function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec, show_agreement, save_fig)
 % Script to combine and compare annotations of two raters.
 
 % STEPS:
@@ -306,10 +306,11 @@ for k=1:n
 end
 
 
-%% Visualize the results
-SaveImage{1}='yes';     % To add to the function combine_FOGannotations
-SaveImage{2}={filename_combined};
-PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
+%% Visualize the results 
+image.save = save_fig;
+image.name = filename_combined;
+PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
+
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
@@ -431,7 +432,7 @@ beginsample = find(tmp==+1);
 endsample = find(tmp==-1) - 1;
 
 % PlotAnn
-function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
+function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
 
 % open new figure
 ImageResult = figure();
@@ -500,12 +501,12 @@ legend([dummy_FOG, dummy_noFOG, dummy_discuss], {'FOG', 'no FOG', 'discuss'}, ..
 % format layout
 set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', 11);
 % ImageResult.WindowState = 'maximized';
-[path, name, ext]=fileparts(char(SaveImage{2}));
+[path, name, ext]=fileparts(image.name);
 title(strrep(name, '_', ' '),'fontsize', 18);
 
 % save image
-if strcmp(SaveImage{1}, 'yes') == 1
-saveas(ImageResult,[string(SaveImage{2})+ '.png']);
+if image.save == 1
+  saveas(ImageResult,[image.name '.png']);
 end
 
 % OVERLAPPINGEVT
