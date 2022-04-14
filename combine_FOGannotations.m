@@ -1,4 +1,4 @@
-function combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec)
+function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec, show_agreement, save_fig)
 % Script to combine and compare annotations of two raters.
 
 % STEPS:
@@ -67,7 +67,8 @@ for i=1:2
     end
     
     FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.fog_trigger(:))|~ismissing(annotations{i}.fog_trigger(:)),:);
-
+    FOG_annotations{i} = FOG_annotations{i}(:, {'begintime_msec', 'endtime_msec', 'fog_trigger', 'fog_type'});% remove extra columns
+    
     % check if each FOG has been labeled with a FOG_Trigger
     idx = find(ismissing(FOG_annotations{i}.fog_trigger(:)));
     if ~isempty(idx)
@@ -305,10 +306,11 @@ for k=1:n
 end
 
 
-%% Visualize the results
-SaveImage{1}='yes';     % To add to the function combine_FOGannotations
-SaveImage{2}={filename_combined};
-PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
+%% Visualize the results 
+image.save = save_fig;
+image.name = filename_combined;
+PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
+
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
 FOG_all_t=[FOG_agreed_t; FOG_disagreed_t]; 
@@ -339,7 +341,7 @@ final_table = [final_table; all_extra_tiers];
 % save table
 header_names = {'Begin Time', 'End Time', 'Tier', 'Annotation'};
 final_table_cell = [header_names; table2cell(final_table)];
-writecell(final_table_cell, filename_combined, 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
+writecell(final_table_cell, strcat(filename_combined, '_annotations-combined'), 'Filetype', 'text', 'Delimiter', '\t'); % workaround to add spaces in header names
 
 %% fill in agreement table
 % create new vector that also contains information about the rater of the
@@ -371,8 +373,10 @@ agreement_info.number_FOG_disagreed_rater2=sum(FOG_disagreed_t.rater==2)/2; % on
 agreement_info.duration_FOG_disagreed_rater2=sum(FOG_summed_v2==2)/1000;
 agreement_info.total_duration=total_duration/1000;
 
-[agreement_info.positive_agreement, agreement_info.negative_agreement,...
-    agreement_info.prevalence_index] = agreementParameters(agreement_info);
+[agreement] = agreement_calculator(agreement_info);
+agreement_info.positive_agreement = agreement.pos_agree;
+agreement_info.negative_agreement = agreement.neg_agree;
+agreement_info.prevalence_index = agreement.prev_indx;
   
 if flag_nogaittask
   warning('No gait tasks were found, do not calculate agreement parameters')
@@ -381,10 +385,6 @@ if flag_nogaittask
   agreement_info.negative_agreement = nan;
   agreement_info.prevalence_index = nan;
 end
-
-% calculate kappa correlation coefficient of this file
-% kappa=kappacoefficient(agreement_info);
-% agreement_info.kappa=kappa;
 
 % calculate %agreement on trigger and type
 if flag_notrigger
@@ -399,8 +399,10 @@ else
 end
 
 % display
-fprintf('Agreement info of file %s: \n', name)
-display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
+if show_agreement
+  fprintf('Agreement info of file %s: \n', name)
+  display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
+end
 
 % load the big agreement table if present
 if exist(filename_agreement_table, 'file')
@@ -428,7 +430,7 @@ beginsample = find(tmp==+1);
 endsample = find(tmp==-1) - 1;
 
 % PlotAnn
-function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, SaveImage)
+function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
 
 % open new figure
 ImageResult = figure();
@@ -497,12 +499,12 @@ legend([dummy_FOG, dummy_noFOG, dummy_discuss], {'FOG', 'no FOG', 'discuss'}, ..
 % format layout
 set( findall(ImageResult, '-property', 'fontsize'), 'fontsize', 11);
 % ImageResult.WindowState = 'maximized';
-[path, name, ext]=fileparts(char(SaveImage{2}));
+[path, name, ext]=fileparts(image.name);
 title(strrep(name, '_', ' '),'fontsize', 18);
 
 % save image
-if strcmp(SaveImage{1}, 'yes') == 1
-saveas(ImageResult,[string(SaveImage{2})+ '.png']);
+if image.save == 1
+  saveas(ImageResult,[image.name '.png']);
 end
 
 % OVERLAPPINGEVT
@@ -512,30 +514,3 @@ function [idx] = overlappingevt(annotations, beginsample, endsample)
 idx=find(([annotations.begintime_msec]<=beginsample & [annotations.endtime_msec]>beginsample) |... % annotation includes the beginsample
     ([annotations.begintime_msec]<endsample & [annotations.endtime_msec]>=endsample) | ... % annotation includes the endsample
     ([annotations.begintime_msec]>=beginsample & [annotations.endtime_msec]<endsample)); % annotation falls within the event
-
-% AGREEMENTPARAMETERS
-function [pos_agree, neg_agree,prev_indx] = agreementParameters(agreement_t)
-n=sum(agreement_t.total_duration);
-a=sum(agreement_t.duration_FOG_agreed);
-b=sum(agreement_t.duration_FOG_disagreed_rater1);
-c=sum(agreement_t.duration_FOG_disagreed_rater2);
-d=n-a-b-c;
-
-pos_agree =2*a/(n+(a-d));
-neg_agree = 2*d/(n-(a-d));
-
-prev_indx =(a-d)/n;
-
-% KAPPACOEFFICIENT
-function kappa =kappacoefficient(agreement_t)
-n=sum(agreement_t.total_duration);
-
-a=sum(agreement_t.durFOG_agreed);
-b=sum(agreement_t.durFOG_disagreed_rater1);
-c=sum(agreement_t.durFOG_disagreed_rater2);
-d=n-a-b-c;
-
-Po=(a+d)/n;
-Pc=(((a+c)*(a+b))/n + ((b+d)*(c+d))/n)/n;
-
-kappa=(Po-Pc)/(1-Pc);

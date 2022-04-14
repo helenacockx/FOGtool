@@ -1,0 +1,84 @@
+<strong>VS06_704</strong>
+[Warning: Not all FOG events were both annotated for FOG_Type for rater 2] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>     <strong>fog_type</strong>
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>________</strong>
+
+      182715.00        243406.00      'FOG_360_L'        ''   
+      455590.00        463147.00      'FOG_Narrow'       ''   
+
+[Warning: 2 FOG events are falling outside the gait_task and are trimmed or removed
+from the list:] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>      <strong>fog_type</strong>  
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>___________</strong>
+
+      122406.00        124073.00      'FOG_Target'    'Akinesia' 
+      470403.00        471313.00      'FOG_Target'    'Trembling'
+
+
+gait_tasks =
+
+  4×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>      <strong>Tier</strong>         <strong>Annotation</strong>   
+    <strong>______________</strong>    <strong>____________</strong>    <strong>_________</strong>    <strong>_______________</strong>
+
+       16482.00        124024.00      gait_task    'Narrow_Course'
+      150599.00        309349.00      gait_task    'Narrow_Course'
+      351649.00        471232.00      gait_task    'Narrow_Course'
+      514798.00        615932.00      gait_task    'Narrow_Course'
+
+<strong>VS08_0497</strong>
+<strong>VS24_823</strong>
+<strong>sub-PD06</strong>
+<strong>sub-PD10</strong>
+<a href="matlab: opentoline('C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\GUI.mlapp',145,1)">145 </a>      diary off
+if system_dependent('IsDebugMode')==1, dbcont; end
+<strong>VS06_704</strong>
+[Warning: Not all FOG events were both annotated for FOG_Type for rater 2] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>     <strong>fog_type</strong>
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>________</strong>
+
+      1.8272e+05       2.4341e+05     'FOG_360_L'        ''   
+      4.5559e+05       4.6315e+05     'FOG_Narrow'       ''   
+
+[Warning: 2 FOG events are falling outside the gait_task and are trimmed or removed from the list:] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>      <strong>fog_type</strong>  
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>___________</strong>
+
+      1.2241e+05       1.2407e+05     'FOG_Target'    'Akinesia' 
+       4.704e+05       4.7131e+05     'FOG_Target'    'Trembling'
+
+
+gait_tasks =
+
+  4×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>      <strong>Tier</strong>         <strong>Annotation</strong>   
+    <strong>______________</strong>    <strong>____________</strong>    <strong>_________</strong>    <strong>_______________</strong>
+
+           16482       1.2402e+05     gait_task    'Narrow_Course'
+       1.506e+05       3.0935e+05     gait_task    'Narrow_Course'
+      3.5165e+05       4.7123e+05     gait_task    'Narrow_Course'
+       5.148e+05       6.1593e+05     gait_task    'Narrow_Course'
+
+<strong>VS08_0497</strong>
+<strong>VS24_823</strong>
+<strong>sub-PD06</strong>
+<strong>sub-PD10</strong>
+<strong>sub-PD06</strong>
+<strong>sub-PD10</strong>
+{Dot indexing is not supported for variables of this type.
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('GUI/RUNButtonPushed', 'C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\GUI.mlapp', 122)" style="font-weight:bold">GUI/RUNButtonPushed</a> (<a href="matlab: opentoline('C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\GUI.mlapp',122,0)">line 122</a>)
+          uialert(app.UIFigure, sprintf('file names are not similar: \n %s \n %s', files{1}(f).name,
+          files{2}(f).name), 'annotation files not similar')
+} 
+<a href="matlab: opentoline('C:\Program Files\MATLAB\R2019a\toolbox\matlab\appdesigner\appdesigner\runtime\+appdesigner\+internal\+service\AppManagementService.m',380,1)">380 </a>                throw(callbackException);

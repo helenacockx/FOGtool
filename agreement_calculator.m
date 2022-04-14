@@ -1,21 +1,17 @@
-folder_combined='\\dcn-srv.science.ru.nl\dcn\biophysics\prompt\freezing_fnirs\data\processed\annotations\combined';
-agreement_t_file=fullfile(folder_combined, 'agreement_table.tsv');
 
-agreement_t = readtable(agreement_t_file, 'FileType', 'text');
+function agreement = agreement_calculator(agreement_t)
+n=sum(agreement_t.total_duration);
+a=sum(agreement_t.duration_FOG_agreed);
+b=sum(agreement_t.duration_FOG_disagreed_rater1);
+c=sum(agreement_t.duration_FOG_disagreed_rater2);
+d=n-a-b-c;
 
-% Kappa correlation
-total_duration=sum(agreement_t.total_duration);
+% agreement parameters
+agreement.pos_agree =2*a/(n+(a-d));
+agreement.neg_agree = 2*d/(n-(a-d));
+agreement.prev_indx =(a-d)/n;
 
-a=sum(agreement_t.durFOG_agreed);
-b=sum(agreement_t.durFOG_disagreed_rater1);
-c=sum(agreement_t.durFOG_disagreed_rater2);
-d=total_duration-a-b-c;
-
-Po=(a+d)/total_duration;
-Pyes=((a+c)/total_duration)*((a+b)/total_duration);
-Pno=((b+d)/total_duration)*((c+d)/total_duration);
-
-kappa=(Po-(Pyes+Pno))/(1-(Pyes+Pno));
-pabak= 2*Po - 1; % prevalence-ajusted bias-adjusted kappa
-
-% intraclass-correlation coefficient
+% kappa
+% Po=(a+d)/n;
+% Pc=(((a+c)*(a+b))/n + ((b+d)*(c+d))/n)/n;
+% agreement.kappa=(Po-Pc)/(1-Pc);
