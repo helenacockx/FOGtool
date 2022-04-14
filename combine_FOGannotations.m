@@ -1,7 +1,39 @@
 function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rater2, filename_combined, filename_agreement_table, ID, correction, tolerance_sec, show_agreement, save_fig)
-% Script to combine and compare annotations of two raters.
-
-% STEPS:
+% COMBINE_FOGANNOTATIONS is the main function combining the two annotation
+% files of the raters, performing a correction based on the tolerance and
+% correction paramters, plotting the outcome, and calculating the initial 
+% agreement between the raters.
+%
+% use as:
+%   [agreement_info] = combine_FOGannotations(filename_rater1,
+%   filename_rater2, filename_combined, filename_agreement_table, ID,
+%   correction, tolerance_sec, show_agreement, save_fig)
+% 
+% INPUT:
+%   filename_rater1           = full filename of the exported ELAN annotation file of 
+%                               rater 1 (exported as tab-delimeted text file) 
+%   filename_rater2           = full filename of the exported ELAN annotation file of
+%                               rater 2 (exported as tab-delimeted text file) 
+%   filename_combined         = full filename used for the export of the 
+%                               annotations and figures
+%   filename_agreement_table  = full filename of the agreement table, used 
+%                               to calculate the final agreement over all 
+%                               files (can be a new or existing table)
+%   ID                        = participant ID code
+%   correction                = parameter to include or exclude the short, non-isolated
+%                               FOG episodes ('include' or 'exclude')
+%   tolerance_sec             = parameter in seconds to define whether a 
+%                               non-isolated FOG episode should be discussed 
+%                               longer than tolerance) or not (shorter than tolerance)
+%   show_agreement            = 1 or 0 to show the agreement calculated for this file
+%   save_fig                  = 1 or 0 to save the plotted outcome as a .png file
+%
+% OUTPUT:
+%   agreement_info            = annotation and agreement info generated for
+%                               this file (will also be saved in the
+%                               agreement_table)
+%
+% STEPS (remove once clear manual):
 % 1. export ELAN annotations as Tab-delimited text (seperate column for each tier: true; at least include begin time
 % and end time in msec)
 % 2. combine annnotations of two raters by running this script. This will
@@ -24,15 +56,6 @@ function [agreement_info] = combine_FOGannotations(filename_rater1, filename_rat
 % choice. By combining the agreed and disagreed FOG's (which have a
 % consensus now), you have all the FOG's.
 
-% TO DO:
-% - what if 'export multiple files as'
-
-% - check script with empty annotation files
-%% Turn on for debugging VS
-% tolerance_sec=2;
-% filename_agreement_table=agreement_table;
-% ID=subjects(VSnmmr2).name;
-% correction='include';
 %% set-up:
 sf=1000;    % choose sampling frequency
 ts=(1/sf);  % time steps
@@ -58,14 +81,13 @@ annotations{2}.Properties.VariableNames = lower(annotations{2}.Properties.Variab
 
 % extract FOG annotations and gait tasks
 for i=1:2
-  
-  % REMOVE THESE LINES IN THE DEFINITIVE VERSION!!!  
-  % convert time from seconds to msec for annotations Helena
+  % convert time from seconds to msec if exported in ss_msec
     try
       annotations{i}.begintime_msec = annotations{i}.begintime_ss_msec*1000;
       annotations{i}.endtime_msec = annotations{i}.endtime_ss_msec*1000;
     end
     
+    % extract FOG annotations
     FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.fog_trigger(:))|~ismissing(annotations{i}.fog_trigger(:)),:);
     FOG_annotations{i} = FOG_annotations{i}(:, {'begintime_msec', 'endtime_msec', 'fog_trigger', 'fog_type'});% remove extra columns
     
@@ -149,12 +171,7 @@ for i=1:height(gait_tasks)
     boolvec_task(round(gait_tasks.begintime_msec(i))+1:round(gait_tasks.endtime_msec(i))+1)=0; % +1 because going from msec to samples
 end
 
-for i=1:2
-    % add extra column with begin sample and end sample of FOG annotation, nu
-    % overbodig?
-    % FOG_annotations{i}.begintime_msec=round(FOG_annotations{i}.begintime_Ss_msec*sf+1);
-    % FOG_annotations{i}.endtime_msec=round(FOG_annotations{i}.endtime_Ss_msec*sf+1);
-    
+for i=1:2   
     % create a boolean vector with the FOG annotations of this rater
     boolvec_FOG=boolvec_task;
     for k=1:height(FOG_annotations{i})
@@ -306,10 +323,10 @@ for k=1:n
 end
 
 
-%% Visualize the results 
+%% visualize the results 
 image.save = save_fig;
 image.name = filename_combined;
-PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
+plot_ann(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
 
 %% combine the agreed and disagreed tables into one table and extra tiers
 % combine agreed and disagreed FOG episodes
@@ -429,8 +446,16 @@ tmp = diff([0 boolvec 0]);
 beginsample = find(tmp==+1);
 endsample = find(tmp==-1) - 1;
 
-% PlotAnn
-function PlotAnn(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
+% OVERLAPPINGEVT
+function [idx] = overlappingevt(annotations, beginsample, endsample)
+% find the indices of annotation events that fall within the event with the
+% given [beginsample endsample].
+idx=find(([annotations.begintime_msec]<=beginsample & [annotations.endtime_msec]>beginsample) |... % annotation includes the beginsample
+    ([annotations.begintime_msec]<endsample & [annotations.endtime_msec]>=endsample) | ... % annotation includes the endsample
+    ([annotations.begintime_msec]>=beginsample & [annotations.endtime_msec]<endsample)); % annotation falls within the event
+
+% PLOTANN
+function plot_ann(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
 
 % open new figure
 ImageResult = figure();
@@ -506,11 +531,3 @@ title(strrep(name, '_', ' '),'fontsize', 18);
 if image.save == 1
   saveas(ImageResult,[image.name '.png']);
 end
-
-% OVERLAPPINGEVT
-function [idx] = overlappingevt(annotations, beginsample, endsample)
-% find the indices of annotation events that fall within the event with the
-% given [beginsample endsample].
-idx=find(([annotations.begintime_msec]<=beginsample & [annotations.endtime_msec]>beginsample) |... % annotation includes the beginsample
-    ([annotations.begintime_msec]<endsample & [annotations.endtime_msec]>=endsample) | ... % annotation includes the endsample
-    ([annotations.begintime_msec]>=beginsample & [annotations.endtime_msec]<endsample)); % annotation falls within the event
