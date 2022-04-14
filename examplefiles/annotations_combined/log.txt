@@ -1,0 +1,36 @@
+<strong>VS06_704</strong>
+[Warning: Not all FOG events were both annotated for FOG_Type for rater 2] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>     <strong>fog_type</strong>
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>________</strong>
+
+      182715.00        243406.00      'FOG_360_L'        ''   
+      455590.00        463147.00      'FOG_Narrow'       ''   
+
+[Warning: 2 FOG events are falling outside the gait_task and are trimmed or removed from the list:] 
+  2×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>    <strong>fog_trigger</strong>      <strong>fog_type</strong>  
+    <strong>______________</strong>    <strong>____________</strong>    <strong>____________</strong>    <strong>___________</strong>
+
+      122406.00        124073.00      'FOG_Target'    'Akinesia' 
+      470403.00        471313.00      'FOG_Target'    'Trembling'
+
+
+gait_tasks =
+
+  4×4 <a href="matlab:helpPopup table" style="font-weight:bold">table</a>
+
+    <strong>begintime_msec</strong>    <strong>endtime_msec</strong>      <strong>Tier</strong>         <strong>Annotation</strong>   
+    <strong>______________</strong>    <strong>____________</strong>    <strong>_________</strong>    <strong>_______________</strong>
+
+       16482.00        124024.00      gait_task    'Narrow_Course'
+      150599.00        309349.00      gait_task    'Narrow_Course'
+      351649.00        471232.00      gait_task    'Narrow_Course'
+      514798.00        615932.00      gait_task    'Narrow_Course'
+
+<strong>VS08_0497</strong>
+<strong>VS24_823</strong>
+<strong>sub-PD06</strong>
+<strong>sub-PD10</strong>
