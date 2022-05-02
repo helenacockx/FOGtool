@@ -460,8 +460,7 @@ function plot_ann(FOG_vector, FOG_agreed, FOG_disagreed, gait_tasks, t, image)
 % open new figure
 ImageResult = figure();
 set(gca, 'color', [0.9 0.9 0.9])
-color_discuss = sscanf('9b9b9b','%2x%2x%2x',[1 3])/255;
-color_discuss = [0.6350 0.0780 0.1840];
+color_discuss = [1 0 0];
 
 % plot gait_tasks
 hold on
