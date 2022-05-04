@@ -55,7 +55,7 @@ Finally, click RUN (button **7**) to calculate the output files and the agreemen
  </figure>
  
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/Example_FOGTool_Output.svg" style="width:80%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/7a2bea40db2a4e4e7205c86859409926675ded77/Images/FOGtool_result.PNG" style="width:60%">
 <figcaption align = "left">Figure 5 - Example of graphical representation of annotations. </figcaption>
  </figure> 
 
@@ -65,11 +65,8 @@ Add the results from the FOG tool by clicking File &rarr; Import &rarr; CSV / Ta
 Click Open and OK, and the annotations are loaded into ELAN. An example is given in Figure 6. The agreed annotations are indicated by the tiers FOG_agreed_Trigger and FOG_agreed_type. The check_annotation tier indicates FOG episodes that were annotated by both raters, but that contained a different label for the FOG type or FOG trigger. The FOG_disagreed_Trigger and FOG_disagreed_Type tiers indicate the FOG episodes that should be discussed with a third rater, or untill consensus is reached. The output of this discussion can again be exported as described here above, and further processed depending on the study goal.<br>
 **Note that neighbouring agreed and disagreed FOG parts might be exported as two separate events, while they belong to the same episode. We therefore recommend the use of % time frozen instead of the number of FOG episodes as primary outcome; or to combine both events into one episode before further processing.**
 
-**Can you zoom out a little bit for this image such that we can also read the FOG_agreed tiers and the gait_tasks? It would also be nice to have a check_annotation event included in this figure.**
-
-
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/e24eafe562a1a8027c6138d6dbca14bc2218f953/Images/ELAN_result%20-%20kopie.png" style="width:100%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/7a2bea40db2a4e4e7205c86859409926675ded77/Images/ELAN_result%20-%20kopie.png" style="width:80%">
 <figcaption align = "left"> Figure 6 - The results from the FOG tool in ELAN.</figcaption>
  </figure>
  
