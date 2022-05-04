@@ -529,5 +529,6 @@ title(strrep(name, '_', ' '),'fontsize', 18);
 
 % save image
 if image.save == 1
+  set(gcf, 'InvertHardCopy', 'off');
   saveas(ImageResult,[image.name '.png']);
 end
