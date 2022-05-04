@@ -38,10 +38,10 @@ Next, choose the values of the tolerance **(2)** and correction **(3)** paramete
 To determine where the outcome files after running the FOGtool will be exported to, click on button **4** and select the desired folder.<br>
 From all the files, the agreement info will be collected in an agreement table which will be used to calculate the overall agreement of a project. Click on button **5** to determine the name and location of this agreement table (default is 'agreement_table.tsv'). Notice that, if you do not run all files at once, you can choose to load a pre-existing agreement table. This will add the new files to the existing table.
 
-Finally, click RUN (button **7**) to calculate the output files and the agreement info of the selected files. This will also displays an image with a graphical representation of the annotations of rater 1, the annotations of rater 2 and the outcome for each file (**add extra figure here**). If required, the figures can be saved by checking the checkmark (functionality 6). To calculate the agreement of the all the files that are saved in the agreement table, click button **8**. 
+Finally, click RUN (button **7**) to calculate the output files and the agreement info of the selected files. This will also displays an image with a graphical representation of the annotations of rater 1, the annotations of rater 2 and the outcome for each file (Figure 5). If required, the figures can be saved by checking the checkmark (functionality 6). To calculate the agreement of the all the files that are saved in the agreement table, click button **8**. 
 
 <figure>
- <img src="https://github.com/helenacockx/FOG_annotations/blob/main/Images/FOGtool_nummers_Klad.png" style="width:70%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/FOGtool_interface.PNG" style="width:100%">
 <figcaption align = "left">Figure 4 - The FOG tool.
  
 1.	To select the annotation files of both rater 1 and 2.
@@ -53,11 +53,16 @@ Finally, click RUN (button **7**) to calculate the output files and the agreemen
 7.	To run the FOGtool for the selected files.
 8.	To calculate the final agreement over all files based on the loaded agreement table. </figcaption>
  </figure>
+ 
+<figure>
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/Example_FOGTool_Output.svg" style="width:100%">
+<figcaption align = "left">Figure 5 - Example of graphical representation of annotations. </figcaption>
+ </figure> 
 
 ### 3. Review the combined annotation files in ELAN ###
 To evaluate the annotations which were not in full consensus, create a new file in ELAN containing the video file you want to review. 
 Add the results from the FOG tool by clicking File &rarr; Import &rarr; CSV / Tab-delimited Text file... and select the .txt file that corresponds to the video. 
-Click Open and OK, and the annotations are loaded into ELAN. An example is given in Figure 5. The agreed annotations are indicated by the tiers FOG_agreed_Trigger and FOG_agreed_type. The check_annotation tier indicates FOG episodes that were annotated by both raters, but that contained a different label for the FOG type or FOG trigger. The FOG_disagreed_Trigger and FOG_disagreed_Type tiers indicate the FOG episodes that should be discussed with a third rater, or untill consensus is reached. The output of this discussion can again be exported as described here above, and further processed depending on the study goal.<br>
+Click Open and OK, and the annotations are loaded into ELAN. An example is given in Figure 6. The agreed annotations are indicated by the tiers FOG_agreed_Trigger and FOG_agreed_type. The check_annotation tier indicates FOG episodes that were annotated by both raters, but that contained a different label for the FOG type or FOG trigger. The FOG_disagreed_Trigger and FOG_disagreed_Type tiers indicate the FOG episodes that should be discussed with a third rater, or untill consensus is reached. The output of this discussion can again be exported as described here above, and further processed depending on the study goal.<br>
 **Note that neighbouring agreed and disagreed FOG parts might be exported as two separate events, while they belong to the same episode. We therefore recommend the use of % time frozen instead of the number of FOG episodes as primary outcome; or to combine both events into one episode before further processing.**
 
 **Can you zoom out a little bit for this image such that we can also read the FOG_agreed tiers and the gait_tasks? It would also be nice to have a check_annotation event included in this figure.**
@@ -65,7 +70,7 @@ Click Open and OK, and the annotations are loaded into ELAN. An example is given
 
 <figure>
  <img src="https://github.com/helenacockx/FOG_annotations/blob/main/Images/ELAN_result.png" style="width:70%">
-<figcaption align = "left"> Figure 5 - The results from the FOG tool in ELAN.</figcaption>
+<figcaption align = "left"> Figure 6 - The results from the FOG tool in ELAN.</figcaption>
  </figure>
  
 [^1]: Gilat M, How to annotate freezing of gait from video: A standardized method using open-source software, Journal of Parkinson’s Disease, Accepted for publication on 12th August 2019, DOI: 10.3233/JPD-191700.
