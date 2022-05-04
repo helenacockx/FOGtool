@@ -67,6 +67,8 @@ flag_nogaittask = false;
 flag_notrigger = false;
 flag_notype = false;
 
+[path_comb, name_comb, ~]=fileparts(filename_combined);
+
 %% import annotations
 opts_rater1 = detectImportOptions(filename_rater1); % read the import options
 opts_rater1 = setvartype(opts_rater1,{'FOG_Trigger','FOG_Type'},'char'); % set to char, default is otherwise double
@@ -95,22 +97,30 @@ for i=1:2
     idx = find(ismissing(FOG_annotations{i}.fog_trigger(:)));
     if ~isempty(idx)
       if length(idx) == height(FOG_annotations{i})
-        warning('Rater %.0d did not characterize any FOG by trigger', i)
+        warndlg(sprintf('Rater %.0d did not characterize any FOG by trigger', i), name_comb)
         flag_notrigger = true;
-      else 
-        warning('Not all FOG events were both annotated for FOG_Trigger for rater %.0d', i)
-        display(FOG_annotations{i}(idx,:))
+      else
+        missing = FOG_annotations{i}(idx,:);
+        msg = sprintf('Not all FOG events were characterized by trigger for rater %.0d:', i);
+        for j = 1:length(idx)
+          msg = [msg ' \n ' sprintf('%d. Begin: %.0f s - End: %.0f s - FOG_Trigger: ? - FOG_Type: %s', j, missing.begintime_msec(j)/1000, missing.endtime_msec(j)/1000, missing.fog_type{j})];
+        end
+        warndlg(sprintf(msg), name_comb);
       end
     end
     % check if each FOG has been labeled with a FOG_Type
     idx = find(ismissing(FOG_annotations{i}.fog_type(:)));
     if ~isempty(idx)
       if length(idx) == height(FOG_annotations{i})
-        warning('Rater %.0d did not characterize any FOG by type', i)
+        warndlg(sprintf('Rater %.0d did not characterize any FOG by type', i), name_comb)
         flag_notype = true;
       else 
-        warning('Not all FOG events were both annotated for FOG_Type for rater %.0d', i)
-        display(FOG_annotations{i}(idx,:))
+        missing = FOG_annotations{i}(idx,:);
+        msg = sprintf('Not all FOG events were characterized by type for rater %.0d:', i);
+        for j = 1:length(idx)
+          msg = [msg ' \n ' sprintf('%d. Begin: %.0f s - End: %.0f s - FOG_Trigger: %s - FOG_Type: ?', j, missing.begintime_msec(j)/1000,  missing.endtime_msec(j)/1000,  missing.fog_trigger{j})];
+        end
+        warndlg(sprintf(msg), name_comb);
       end
     end
     
@@ -127,7 +137,7 @@ for i=1:2
     % calculate total duration based on the gait tasks
     gait_tasks{i}=annotations_long{i}(annotations_long{i}.Tier == 'gait_task', :);
     if isempty(gait_tasks{i})
-        warning('No gait_tasks were found for rater %.0d', i)
+        warndlg('No gait_tasks were found for rater %.0d', i)
         duration_gait_tasks{i}=max(FOG_annotations{i}.endtime_msec)+1000;
     else
         duration_gait_tasks{i}=sum(gait_tasks{i}.endtime_msec-gait_tasks{i}.begintime_msec);
@@ -138,21 +148,22 @@ end
 if ~isempty(gait_tasks{1}) & ~isempty(gait_tasks{2})
     % check if total_duration is the same for both files
     if round(duration_gait_tasks{1}, -3)~=round(duration_gait_tasks{2}, -3)
-        warning('total duration of gait tasks was not the same for both raters. Using the gait_tasks of rater 1.')
-        fprintf('total duration of rater 1 (sec): %d \n', round(duration_gait_tasks{1}/1000));
-        fprintf('total duration of rater 2 (sec): %d \n', round(duration_gait_tasks{2}/1000));
+        msg1 = ('Total duration of gait tasks was not the same for both raters. Using the gait_tasks of rater 1.')
+        msg2 = sprintf(' - total duration of rater 1: %.0f s', duration_gait_tasks{1}/1000);
+        msg3 = sprintf(' - total duration of rater 2: %.0f s', duration_gait_tasks{2}/1000);
+        warndlg(sprintf([msg1 '\n' msg2 '\n' msg3]), name_comb)
     end
     total_duration = duration_gait_tasks{1};
     endtime = max(gait_tasks{1}.endtime_msec);
     gait_tasks=gait_tasks{1};
 elseif ~isempty(gait_tasks{1}) | ~isempty(gait_tasks{2})
     rater = find([~isempty(gait_tasks{1})  ~isempty(gait_tasks{2})]);
-    warning('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration.', rater)
+    warndlg(sprintf('Only annotations of rater %.0d contained gait_tasks. Using those to calculate total duration.', rater), name_comb)
     total_duration = duration_gait_tasks{rater};
     endtime = max(gait_tasks{rater}.endtime_msec);
     gait_tasks=gait_tasks{rater};
 elseif isempty(gait_tasks{1}) & isempty(gait_tasks{2})
-    warning('No gait tasks were found for any of the raters. Assuming that the gait_task ended 1 sec after the last FOG event. The agreement parameters will not be calculated and the visualization might be wrong.')
+    warndlg('No gait tasks were found for any of the raters. Assuming that the gait_task ended 1 sec after the last FOG event. The agreement parameters will not be calculated and the visualization might be wrong.', name_comb)
     flag_nogaittask = true;
     total_duration = max([duration_gait_tasks{1}, duration_gait_tasks{2}]);
     endtime = total_duration;
@@ -181,12 +192,13 @@ for i=1:2
     if sum(boolvec_FOG ==1 & isnan(boolvec_task))>0
       startsample = find(diff([boolvec_FOG ==1 & isnan(boolvec_task)])==1);
       idx = [];
+      msg = sprintf('%d FOG event(s) is/are falling outside the gait_task and are trimmed or removed from the list:', numel(startsample));
       for k=1:length(startsample)
         idx = [idx; find(startsample(k)>=FOG_annotations{i}.begintime_msec & startsample(k)<=FOG_annotations{i}.endtime_msec)];
+        probl = FOG_annotations{i}(idx(end),:);
+        msg = [msg ' \n ' sprintf('%d. Begin: %.0f s - End: %.0f s - FOG_Trigger: %s - FOG_Type: %s', k, probl.begintime_msec(1)/1000,  probl.endtime_msec(1)/1000,  probl.fog_trigger{1},  probl.fog_type{1})];
       end
-      warning('%d FOG events are falling outside the gait_task and are trimmed or removed from the list:', numel(startsample))
-      display(FOG_annotations{i}(idx,:))
-      display(gait_tasks)
+      warndlg(sprintf(msg), name_comb)
     end
     FOG_vector{i}=boolvec_FOG + boolvec_task; % + boolvec_task to make sure that FOGs falling outside the gait_task are made nan
     % make sure all FOG events go back to 0 before gait_task ends and
@@ -203,7 +215,7 @@ FOG_summed=FOG_vector{1}+FOG_vector{2};
 beginsample=find(FOG_summed==1 & diff([0 FOG_summed])~=0);% find beginsamples when going from definetly (black/white) to possible (grey)
 endsample=find(FOG_summed==1 &  diff([FOG_summed 0])~=0); % find endsamples when going back from possible (grey) to definitely (black/white)
 if length(beginsample)~= length(endsample)
-    error('Not all begin and end samples were found for the possible FOG events')
+    errordlg('Not all begin and end samples were found for the possible FOG events', name_comb)
 end
 
 % include or exclude possible FOG events based on the chosen parameters
@@ -225,7 +237,7 @@ for k=1:length(beginsample)
       case 'exclude'
         FOG_corrected(beginsample(k):endsample(k)) = 0; % definitely no FOG
       otherwise
-        error('no valid correction option was chosen. Please choose include or exclude.')
+        errordlg('No valid correction option was chosen. Please choose include or exclude.', name_comb)
     end
   end
 end
@@ -263,7 +275,7 @@ for k=1:n
         FOG_disagreed_t.Annotation(2*k-1)=FOG_annotations{2}.fog_trigger(idx_rater2);
         FOG_disagreed_t.Annotation(2*k)=FOG_annotations{2}.fog_type(idx_rater2);
     else
-        error('Multiple annotations were found for this disagreed FOG episode') 
+        errordlg('Multiple annotations were found for this disagreed FOG episode.', name_comb) 
     end
 end
 
@@ -280,7 +292,7 @@ for k=1:n
     idx_rater1 = overlappingevt(FOG_annotations{1}, beginsample(k), endsample(k));
     idx_rater2 = overlappingevt(FOG_annotations{2}, beginsample(k), endsample(k));
     if isempty(idx_rater1) | isempty(idx_rater2)
-        error('No annotations were found for this agreed FOG episode')
+        errordlg('No annotations were found for this agreed FOG episode.', name_comb)
     end
 
     % check trigger
@@ -376,8 +388,7 @@ agreement_info=table('Size', [1, 18], 'VariableNames', varnames, 'VariableTypes'
 
 
 agreement_info.subject={ID};
-[path, name, ext]=fileparts(filename_combined);
-agreement_info.filename={name};
+agreement_info.filename={name_comb};
 agreement_info.number_FOG_rater1=height(FOG_annotations{1});
 agreement_info.duration_FOG_rater1=sum([FOG_annotations{1}.endtime_msec-FOG_annotations{1}.begintime_msec])/1000;
 agreement_info.number_FOG_rater2=height(FOG_annotations{2});
@@ -396,7 +407,7 @@ agreement_info.negative_agreement = agreement.neg_agree;
 agreement_info.prevalence_index = agreement.prev_indx;
   
 if flag_nogaittask
-  warning('No gait tasks were found, do not calculate agreement parameters')
+  warndlg('No gait tasks were found, do not calculate agreement parameters', name_comb)
   agreement_info.total_duration = nan;
   agreement_info.positive_agreement = nan;
   agreement_info.negative_agreement = nan;
@@ -417,7 +428,7 @@ end
 
 % display
 if show_agreement
-  fprintf('Agreement info of file %s: \n', name)
+  fprintf('Agreement info of file %s: \n', name_comb)
   display(table(varnames(3:end)', round(agreement_info{:,3:end}',2), 'VariableNames', {'annotation_info', 'value'}))
 end
 
@@ -425,8 +436,8 @@ end
 if exist(filename_agreement_table, 'file')
     agreement_t=readtable(filename_agreement_table, 'FileType', 'text', 'ReadVariableNames', 1, 'HeaderLines', 0);
     % check if this file is already part of the agreement table
-    if any(strcmp(agreement_t.filename, name)) % update the info in the table
-        n=find(strcmp(agreement_t.filename, name));
+    if any(strcmp(agreement_t.filename, name_comb)) % update the info in the table
+        n=find(strcmp(agreement_t.filename, name_comb));
         agreement_t(n,:)=agreement_info;
     else % add an extra row to the table
         agreement_t=[agreement_t; agreement_info];
