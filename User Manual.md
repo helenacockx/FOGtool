@@ -55,7 +55,7 @@ Finally, click RUN (button **7**) to calculate the output files and the agreemen
  </figure>
  
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/Example_FOGTool_Output.svg" style="width:100%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/Example_FOGTool_Output.svg" style="width:80%">
 <figcaption align = "left">Figure 5 - Example of graphical representation of annotations. </figcaption>
  </figure> 
 
@@ -69,7 +69,7 @@ Click Open and OK, and the annotations are loaded into ELAN. An example is given
 
 
 <figure>
- <img src="https://github.com/helenacockx/FOG_annotations/blob/main/Images/ELAN_result.png" style="width:70%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/e24eafe562a1a8027c6138d6dbca14bc2218f953/Images/ELAN_result%20-%20kopie.png" style="width:100%">
 <figcaption align = "left"> Figure 6 - The results from the FOG tool in ELAN.</figcaption>
  </figure>
  
