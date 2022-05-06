@@ -16,17 +16,17 @@ Then, to export the data, select File &rarr; Export As &rarr; Tab-delimited Text
 **Important remark: The filename should be of the format ‘participantID_raterID’ (e.g. *sub-PD06_annotations-Helena*, *VS24_EKeng*) or ‘participantID_filename_raterID’ (e.g. *sub-PD06_session-01_annotations-Helena*, *VS24_823_EKeng*), in this particular order, as the FOGtool uses the filename separated by the underscores to read unique file identifiers.**
 
 <figure>
-<img src="https://github.com/helenacockx/FOG_annotations/blob/main/Images/ELAN_language.png" style="width:70%">
+<img src="https://github.com/helenacockx/FOG_annotations/blob/main/manual/Images/ELAN_language.png" style="width:70%">
 <figcaption align = "left">Figure 1 - ELAN language settings.</figcaption>
  </figure>
  
 <figure>
-<img src="https://github.com/helenacockx/FOGtool/blob/main/Images/ELAN_export.png" style="width:50%">
+<img src="https://github.com/helenacockx/FOGtool/blob/main/manual/Images/ELAN_export.png" style="width:50%">
 <figcaption align = "left">Figure 2 - Select the ELAN export.</figcaption>
  </figure>
  
  <figure>
- <img src="https://github.com/helenacockx/FOG_annotations/blob/main/Images/ELAN_Export_options.PNG" style="width:80%">
+ <img src="https://github.com/helenacockx/FOG_annotations/blob/main/manual/Images/ELAN_Export_options.PNG" style="width:80%">
 <figcaption align = "left">Figure 3 - ELAN export settings.</figcaption>
  </figure>
  
@@ -41,7 +41,7 @@ From all the files, the agreement info will be collected in an agreement table w
 Finally, click RUN (button **7**) to calculate the output files and the agreement info of the selected files. This will also displays an image with a graphical representation of the annotations of rater 1, the annotations of rater 2 and the outcome for each file (Figure 5). If required, the figures can be saved by checking the checkmark (functionality 6). To calculate the agreement of the all the files that are saved in the agreement table, click button **8**. 
 
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/main/Images/FOGtool_interface.PNG" style="width:100%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/manual/Images/FOGtool_interface.PNG" style="width:100%">
 <figcaption align = "left">Figure 4 - The FOG tool.
  
 1.	To select the annotation files of both rater 1 and 2.
@@ -55,7 +55,7 @@ Finally, click RUN (button **7**) to calculate the output files and the agreemen
  </figure>
  
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/7a2bea40db2a4e4e7205c86859409926675ded77/Images/FOGtool_result.PNG" style="width:60%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/manual/Images/FOGtool_result.PNG" style="width:60%">
 <figcaption align = "left">Figure 5 - Example of graphical representation of annotations. </figcaption>
  </figure> 
 
@@ -66,7 +66,7 @@ Click Open and OK, and the annotations are loaded into ELAN. An example is given
 **Note that neighbouring agreed and disagreed FOG parts might be exported as two separate events, while they belong to the same episode. We therefore recommend the use of % time frozen instead of the number of FOG episodes as primary outcome; or to combine both events into one episode before further processing.**
 
 <figure>
- <img src="https://github.com/helenacockx/FOGtool/blob/7a2bea40db2a4e4e7205c86859409926675ded77/Images/ELAN_result%20-%20kopie.png" style="width:80%">
+ <img src="https://github.com/helenacockx/FOGtool/blob/main/manual/Images/ELAN_result%20-%20kopie.png" style="width:80%">
 <figcaption align = "left"> Figure 6 - The results from the FOG tool in ELAN.</figcaption>
  </figure>
  

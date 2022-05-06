@@ -1,11 +1,11 @@
 %% set-up:
 clear all; close all;
-addpath C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations
+addpath C:\Users\helen\Documents\1.Projects\FOG_annotation\FOGtool\
 
 % input
-folder_rater1='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_rater1';
-folder_rater2='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_rater2';
-folder_combined='C:\Users\helen\Documents\PhD\FOG_annotation\matlabscripts\FOG_annotations\examplefiles\annotations_combined';
+folder_rater1='C:\Users\helen\Documents\1.Projects\FOG_annotation\FOGtool\examplefiles\annotations_rater1';
+folder_rater2='C:\Users\helen\Documents\1.Projects\FOG_annotation\FOGtool\examplefiles\annotations_rater2';
+folder_combined='C:\Users\helen\Documents\1.Projects\FOG_annotation\FOGtool\examplefiles\annotations_combined';
 agreement_table=fullfile(folder_combined, 'agreement_table.tsv');
 tolerance_sec=2;    % Tolerance in sec
 correction='include'; % or exclude
