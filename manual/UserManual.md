@@ -7,7 +7,7 @@ In summary, videos are first annotated by two raters as proposed by Gilat in the
 
 ## How should I use the FOGtool? ##
 This user guide describes the steps how to use the graphical user interface of the FOGtool, starting from the annotation files from ELAN. However, users are also free to build there own analysis scripts by using the individual functions provided in this repository (combine_FOGannotations.m and agreement_calculator.m).<br>
-Example files are provided in the folder *examplefiles*.
+Example files are provided in the folder *examplefiles*. The individual functions and example files can be accessed by downloading the source code on our [release page](https://github.com/helenacockx/FOGtool/releases/latest/).
 
 ### 1.  Creating the annotation files in ELAN ###
 To start, we highly recommend to annotate the videos by using the format described by Gilat [^1]. The ELAN template provided by Gilat can be adapted to the user's preferences, however, the following tiers are required by the FOGtool and should therefore always be included: the Gait_Task, FOG_Trigger and FOG_Type. All extra tiers will be retained by the FOGtool. For further details for annotating the video, we refer to [the manual provided by Gilat](https://morangilat.com/wp-content/uploads/2019/09/FOG_Scoring_User_guide_v1.0.pdf). <br>
