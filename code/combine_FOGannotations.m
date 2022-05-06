@@ -334,6 +334,14 @@ for k=1:n
     end
 end
 
+%% check if this file needs revision in ELAN. If so, save in other folder.
+if ~isempty(FOG_disagreed_t) | any(strcmp(FOG_agreed_t.Tier, 'check_annotation'))
+  path_toreview = fullfile(path_comb, 'ToReview');
+  if ~exist(path_toreview)
+    mkdir(path_toreview);
+  end
+  filename_combined = fullfile(path_toreview, name_comb);
+end
 
 %% visualize the results 
 image.save = save_fig;
