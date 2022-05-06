@@ -531,7 +531,7 @@ end
 ylim([-1 6])
 yticks([0.5 2.5 4.5])
 yticklabels({'outcome', 'rater 2', 'rater 1'})
-xlabel('time (in s)')
+xlabel('time (s)')
 
 % add legend 
 dummy_FOG = fill(0,0, 'k');
