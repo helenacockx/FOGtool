@@ -9,7 +9,7 @@ FOGtool is free software: you can redistribute it and/or modify it under the ter
 Please refer to this paper when using FOGtool [paper is to be included here once accepted].
 
 ## Installation ## 
-To start using FOGtool, download the latest version [here](https://github.com/helenacockx/FOGtool/releases/latest/).
+To start using FOGtool, download the latest version [here](https://github.com/helenacockx/FOGtool/releases/latest/) under 'assets'.
 Download the FOGtool.exe file and follow the download instructions. <br>
 When downloading the Source Code.zip, you also have access to example files (in the folder *examplefiles*), and the original functions (combine_FOGannotations.m and agreement_calculator.m in the folder *code*) to start building your own scripts.
 
