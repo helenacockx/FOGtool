@@ -77,5 +77,8 @@ An example is given in Figure 6. The agreed annotations are indicated by the tie
  <img src="https://github.com/helenacockx/FOGtool/blob/2a3d62d1086004af435bfdd3372d1fbf362b351f/manual/Images/ELAN_result%20-%20kopie.png" style="width:65%">
  </figure>
  
+ ## Feedback ##
+Please note that our tool is still new and is open to further improvements. We are happy to receive your feedback and invite you to share your issues or feature enhancements on github or send us an email (helena.cockx@donders.ru.nl or emilieklaver@mst.nl).
+ 
 [^1]: Cockx H. et al., The Grey Area of Freezing of Gait Annotation: a Guideline and Open-Source Practical Tool. Preprint: https://osf.io/274ch
 [^2]: Gilat M, How to annotate freezing of gait from video: A standardized method using open-source software, Journal of Parkinson’s Disease, Accepted for publication on 12th August 2019, DOI: 10.3233/JPD-191700.
