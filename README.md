@@ -1,3 +1,7 @@
+<figure>
+<img src="https://github.com/helenacockx/FOGtool/blob/main/code/FOGtool_logo.png" style="width:70%">
+ </figure>
+ 
 # FOGtool #
 The golden standard for freezing of gait (FOG) assessment is video annotation by two independent raters. The FOGtool implements the theoretical guideline described by Cockx, Klaver and colleagues[^1], to combine the annotions of two raters based on two parameters: the tolerance and correction parameters. Moreover, it calculates the agreement between the two raters by providing the positive agreement, the negative agreement, and the prevalence index.
 
