@@ -1,5 +1,5 @@
-<figure>
-<img src="https://github.com/helenacockx/FOGtool/blob/main/code/FOGtool_logo.png" style="width:50%" align="center">
+<figure align="center">
+<img src="https://github.com/helenacockx/FOGtool/blob/main/code/FOGtool_logo.png" style="width:50%" >
  </figure>
  
 # FOGtool #
