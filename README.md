@@ -15,5 +15,8 @@ When downloading the Source Code.zip, you also have access to example files (in 
 
 A clear user manual can be found [here](https://github.com/helenacockx/FOGtool/blob/main/manual/UserManual.md).
 
+## Feedback ##
+Please note that our tool is still new and is open to further improvements. We are happy to receive your feedback and invite you to share your issues or feature enhancements on github or send us an email (helena.cockx@donders.ru.nl or emilieklaver@mst.nl).
+
 [^1]: Cockx H., et al., The Grey Area of Freezing Annotation: a Guideline and Open Source Practical Tool, preprint: https://osf.io/274ch
 [^2]: Gilat M, How to annotate freezing of gait from video: A standardized method using open-source software, Journal of Parkinson’s Disease, Accepted for publication on 12th August 2019, DOI: 10.3233/JPD-191700.
