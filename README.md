@@ -10,6 +10,14 @@ The golden standard for freezing of gait (FOG) assessment is video annotation by
 
 In summary, videos are first annotated by two raters as proposed by Gilat in the open-source ELAN software, including characterizing the phenotype (i.e. trembling, shuffling, or akinesia) and trigger (e.g. FOG_Target, FOG_180_R, FOG_Doorway) of each FOG episode [^2]. The annotations are subsequently exported as tabular files which are read in by the FOGtool. The FOG tool will then, based on the chosen tolerance and correction parameter, define the agreed epochs (FOG or no FOG) and the epochs that should be reviewed. Furthermore, FOG episodes that were annotated by both raters, but were characterized by a different phenotype or trigger, are flagged by a ‘check_type’ or ‘check_trigger’, respectively. The outcome is visualized and exported as tabular files which can be reimported into ELAN. Hence, researchers can discuss the remaining to-be-discussed areas (to keep or remove) and the phenotype/trigger of the episode while reviewing the videos. 
 
+<figure>
+ <p align="center">
+  <img src="https://github.com/helenacockx/FOGtool/blob/main/manual/Images/FOGtool.png"
+   width="800"/>
+  </p>
+ </figure>
+
+
 ## Copyright and Citation ##
 FOGtool is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the file LICENSE for more details.
 
