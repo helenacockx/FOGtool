@@ -21,7 +21,7 @@ In summary, videos are first annotated by two raters as proposed by Gilat in the
 ## Copyright and Citation ##
 FOGtool is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the file LICENSE for more details.
 
-Please refer to this paper when using FOGtool [paper is to be included here once accepted].
+Please refer to this paper [^1] when using FOGtool.
 
 ## Installation ## 
 To start using FOGtool, download the latest version [here](https://github.com/helenacockx/FOGtool/releases/latest/) under *assets*.
@@ -33,5 +33,5 @@ A clear user manual can be found [here](https://github.com/helenacockx/FOGtool/b
 ## Feedback ##
 Please note that our tool is still new and is open to further improvements. We are happy to receive your feedback and invite you to share your issues or feature enhancements on github or send us an email (helena.cockx@donders.ru.nl or emilieklaver@mst.nl).
 
-[^1]: Cockx H., et al., The Grey Area of Freezing Annotation: a Guideline and Open Source Practical Tool, preprint: https://osf.io/274ch
+[^1]: Cockx H., et al., The Gray Area of Freezing Annotation: a Guideline and Open Source Practical Tool, Movement Disorders Clinical Practice (2022), https://doi.org/10.1002/mdc3.13556
 [^2]: Gilat M, How to annotate freezing of gait from video: A standardized method using open-source software, Journal of Parkinson’s Disease, Accepted for publication on 12th August 2019, DOI: 10.3233/JPD-191700.
