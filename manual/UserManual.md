@@ -37,7 +37,7 @@ Prior to running the tool, make sure that you have all the files that you want t
 
 An overview of the functionalities of the FOGtool is given in Figure 4.<br>
 Click on button **1a** to select the annotation files of rater 1; then click button **1b** to select the annotation files of rater 2. The selected files should be listed in the preview screen below the buttons. 
-Next, choose the values of the tolerance **(2)** and correction **(3)** parameter that should be used to define whether non overlapping annotation parts should be included as FOG, excluded as FOG, or marked to be further discussed. Non overlapping parts that are exceding the tolerance parameter (the default is set to 2 seconds) will be marked as 'to discuss'. Non overlapping parts that are shorter than the tolerance parameter are included/excluded based on the correction parameter (default is 'include'). To learn more about the tolerance and correction parameter, we refer to our paper [^2].<br>
+Next, choose the values of the tolerance **(2)** and correction **(3)** parameter that should be used to define whether non overlapping annotation parts should be included as FOG, excluded as FOG, or marked to be further discussed. Non overlapping parts that are exceding the tolerance parameter (the default is set to 2 seconds) will be marked as 'to discuss'. Non overlapping parts that are shorter than the tolerance parameter are included/excluded based on the correction parameter (default is 'include'). To learn more about the tolerance and correction parameter, we refer to our paper [^1].<br>
 To determine where the outcome files after running the FOGtool will be exported to, click on button **4** and select the desired folder.<br>
 From all the files, the agreement info will be collected in an agreement table which will be used to calculate the overall agreement of a project. Click on button **5** to determine the name and location of this agreement table (default is 'agreement_table.tsv'). Notice that, if you do not run all files at once, you can choose to load a pre-existing agreement table. This will add the new files to the existing table.
 
@@ -80,5 +80,5 @@ An example is given in Figure 6. The agreed annotations are indicated by the tie
  ## Feedback ##
 Please note that our tool is still new and is open to further improvements. We are happy to receive your feedback and invite you to share your issues or feature enhancements on github or send us an email (helena.cockx@donders.ru.nl or emilieklaver@mst.nl).
  
-[^1]: Cockx H. et al., The Grey Area of Freezing of Gait Annotation: a Guideline and Open-Source Practical Tool. Preprint: https://osf.io/274ch
+[^1]: Cockx H. et al., The Gray Area of Freezing of Gait Annotation: a Guideline and Open-Source Practical Tool. Movement Disorders Clinical Practice (2022), https://doi.org/10.1002/mdc3.13556
 [^2]: Gilat M, How to annotate freezing of gait from video: A standardized method using open-source software, Journal of Parkinson’s Disease, Accepted for publication on 12th August 2019, DOI: 10.3233/JPD-191700.
