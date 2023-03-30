@@ -66,6 +66,9 @@ for i=1:2
       annotations{i}.begintime_msec = annotations{i}.begintime_ss_msec*1000;
       annotations{i}.endtime_msec = annotations{i}.endtime_ss_msec*1000;
     end
+    % make sure the msec are round values
+    annotations{i}.begintime_msec = round(annotations{i}.begintime_msec);
+    annotations{i}.endtime_msec = round(annotations{i}.endtime_msec);
     
     % extract FOG annotations
     FOG_annotations{i}=annotations{i}(~ismissing(annotations{i}.fog_trigger(:))|~ismissing(annotations{i}.fog_trigger(:)),:);
