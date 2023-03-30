@@ -163,7 +163,15 @@ for i=1:height(gait_tasks)
     boolvec_task(round(gait_tasks.begintime_msec(i))+1:round(gait_tasks.endtime_msec(i))+1)=0; % +1 because going from msec to samples
 end
 
-for i=1:2   
+for i=1:2    
+    % make sure that the FOG annotations fall within the time vector
+    if any(FOG_annotations{i}.endtime_msec > t(end)/ts)
+      idx2remove = (FOG_annotations{i}.endtime_msec > t(end)/ts & FOG_annotations{i}.begintime_msec > t(end)/ts); % FOG events falls entirely out of the time window
+      FOG_annotations{i} = FOG_annotations{i}(~idx2remove,:);
+      idx2cut = (FOG_annotations{i}.endtime_msec > t(end)/ts & FOG_annotations{i}.begintime_msec <= t(end)/ts); % FOG events falls partly outside the time window
+      FOG_annotations{i}.endtime_msec(idx2cut) = t(end)/ts;
+    end   
+    
     % create a boolean vector with the FOG annotations of this rater
     boolvec_FOG=boolvec_task;
     for k=1:height(FOG_annotations{i})
